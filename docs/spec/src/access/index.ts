@@ -4,71 +4,95 @@ import { IntegrationConfig } from '../../../../src/config';
 export const accessSpec: StepSpec<IntegrationConfig>[] = [
   {
     /**
-     * ENDPOINT: https://localhost/api/v1/users
+     * ENDPOINT:
      * PATTERN: Fetch Entities
+     * There doesn't appear to be any way to fetch roles.  At the moment they are a static list.
      */
-    id: 'fetch-users',
-    name: 'Fetch Users',
+    id: 'fetch-roles',
+    name: 'Fetch Roles',
     entities: [
       {
-        resourceName: 'User',
-        _type: 'acme_user',
+        resourceName: 'Role',
+        _type: 'sentry_role',
+        _class: ['AccessRole'],
+      },
+    ],
+    relationships: [],
+    dependsOn: [],
+    implemented: false,
+  },
+  {
+    /**
+     * ENDPOINT: /api/0/organizations/{organization_slug}/users/
+     * PATTERN: Fetch Entities? or Fetch Relationshoips?
+     */
+    id: 'fetch-members',
+    name: 'Fetch Members',
+    entities: [
+      {
+        resourceName: 'Member',
+        _type: 'sentry_member',
         _class: ['User'],
       },
     ],
     relationships: [
       {
-        _type: 'acme_account_has_user',
-        sourceType: 'acme_account',
-        _class: RelationshipClass.HAS,
-        targetType: 'acme_user',
+        _type: 'sentry_member_has_role',
+        sourceType: 'sentry_member',
+        _class: RelationshipClass.ASSIGNED,
+        targetType: 'sentry_role',
       },
     ],
-    dependsOn: ['fetch-account'],
-    implemented: true,
+    dependsOn: ['fetch-roles'],
+    implemented: false,
   },
   {
     /**
-     * ENDPOINT: https://localhost/api/v1/groups
-     * PATTERN: Fetch Entities
+     * ENDPOINT: /api/0/organizations/{organization_slug}/teams/
+     * PATTERN: Fetch Entities? or Fetch Child Entities?
      */
-    id: 'fetch-groups',
-    name: 'Fetch Groups',
+    id: 'fetch-teams',
+    name: 'Fetch Teams',
     entities: [
       {
-        resourceName: 'UserGroup',
-        _type: 'acme_group',
+        resourceName: 'Team',
+        _type: 'sentry_team',
         _class: ['UserGroup'],
       },
     ],
     relationships: [
       {
-        _type: 'acme_account_has_group',
-        sourceType: 'acme_account',
+        _type: 'sentry_team_assigned_project',
+        sourceType: 'sentry_team',
+        _class: RelationshipClass.ASSIGNED,
+        targetType: 'sentry_project',
+      },
+      {
+        _type: 'sentry_team_has_member',
+        sourceType: 'sentry_team',
         _class: RelationshipClass.HAS,
-        targetType: 'acme_group',
+        targetType: 'sentry_member',
       },
     ],
-    dependsOn: ['fetch-account'],
-    implemented: true,
+    dependsOn: ['fetch-projects', 'fetch-members'],
+    implemented: false,
   },
   {
     /**
-     * ENDPOINT: n/a
-     * PATTERN: Build Child Relationships
+     * ENDPOINT: /api/0/organizations/{organization_slug}/projects/
+     * PATTERN: Fetch Entities? or Fetch Chiled Entities?
      */
-    id: 'build-user-group-relationships',
-    name: 'Build Group -> User Relationships',
-    entities: [],
-    relationships: [
+    id: 'fetch-projects',
+    name: 'Fetch Projects',
+    entities: [
       {
-        _type: 'acme_group_has_user',
-        sourceType: 'acme_group',
-        _class: RelationshipClass.HAS,
-        targetType: 'acme_user',
+        resourceName: 'Project',
+        _type: 'sentry_project',
+        _class: ['Project'],
       },
     ],
-    dependsOn: ['fetch-groups', 'fetch-users'],
-    implemented: true,
+    relationships: [],
+    dependsOn: [],
+    implemented: false,
   },
 ];
