@@ -16,26 +16,7 @@ export const accountSpec: StepSpec<IntegrationConfig>[] = [
         _class: ['Account'],
       },
     ],
-    relationships: [
-      {
-        _type: 'sentry_organization_has_project',
-        sourceType: 'sentry_organization',
-        _class: RelationshipClass.HAS,
-        targetType: 'sentry_project',
-      },
-      {
-        _type: 'sentry_organization_has_team',
-        sourceType: 'sentry_organization',
-        _class: RelationshipClass.HAS,
-        targetType: 'sentry_team',
-      },
-      {
-        _type: 'sentry_organization_has_member',
-        sourceType: 'sentry_organization',
-        _class: RelationshipClass.HAS,
-        targetType: 'sentry_member',
-      },
-    ],
+    relationships: [],
     dependsOn: [],
     implemented: false,
   },

@@ -4,27 +4,8 @@ import { IntegrationConfig } from '../../../../src/config';
 export const accessSpec: StepSpec<IntegrationConfig>[] = [
   {
     /**
-     * ENDPOINT:
-     * PATTERN: Fetch Entities
-     * There doesn't appear to be any way to fetch roles.  At the moment they are a static list.
-     */
-    id: 'fetch-roles',
-    name: 'Fetch Roles',
-    entities: [
-      {
-        resourceName: 'Role',
-        _type: 'sentry_role',
-        _class: ['AccessRole'],
-      },
-    ],
-    relationships: [],
-    dependsOn: [],
-    implemented: false,
-  },
-  {
-    /**
      * ENDPOINT: /api/0/organizations/{organization_slug}/users/
-     * PATTERN: Fetch Entities? or Fetch Relationshoips?
+     * PATTERN: Fetch Entities
      */
     id: 'fetch-members',
     name: 'Fetch Members',
@@ -37,19 +18,38 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
     ],
     relationships: [
       {
-        _type: 'sentry_member_has_role',
-        sourceType: 'sentry_member',
-        _class: RelationshipClass.ASSIGNED,
-        targetType: 'sentry_role',
+        _type: 'sentry_organization_has_member',
+        sourceType: 'sentry_organization',
+        _class: RelationshipClass.HAS,
+        targetType: 'sentry_member',
       },
     ],
-    dependsOn: ['fetch-roles'],
+    dependsOn: ['fetch-organization'],
+    implemented: false,
+  },
+  {
+    /**
+     * ENDPOINT: /api/0/organizations/{organization_slug}/users/
+     * PATTERN: Build Child Relationships
+     */
+    id: 'fetch-member-projects',
+    name: 'Fetch Member Projects',
+    entities: [],
+    relationships: [
+      {
+        _type: 'sentry_project_has_member',
+        sourceType: 'sentry_project',
+        _class: RelationshipClass.HAS,
+        targetType: 'sentry_member',
+      },
+    ],
+    dependsOn: ['fetch-members'],
     implemented: false,
   },
   {
     /**
      * ENDPOINT: /api/0/organizations/{organization_slug}/teams/
-     * PATTERN: Fetch Entities? or Fetch Child Entities?
+     * PATTERN: Fetch Child Entities
      */
     id: 'fetch-teams',
     name: 'Fetch Teams',
@@ -62,11 +62,43 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
     ],
     relationships: [
       {
+        _type: 'sentry_organization_has_team',
+        sourceType: 'sentry_organization',
+        _class: RelationshipClass.HAS,
+        targetType: 'sentry_team',
+      },
+    ],
+    dependsOn: ['fetch-organization'],
+    implemented: false,
+  },
+  {
+    /**
+     * ENDPOINT: /api/0/organizations/{organization_slug}/teams/
+     * PATTERN: Build Child Relationships
+     */
+    id: 'fetch-teams-projects',
+    name: 'Fetch Teams Projects',
+    entities: [],
+    relationships: [
+      {
         _type: 'sentry_team_assigned_project',
         sourceType: 'sentry_team',
         _class: RelationshipClass.ASSIGNED,
         targetType: 'sentry_project',
       },
+    ],
+    dependsOn: ['fetch-teams'],
+    implemented: false,
+  },
+  {
+    /**
+     * ENDPOINT: /api/0/teams/{{team_name}}/{{team_name}}/members/
+     * PATTERN: Build Child Relationships
+     */
+    id: 'fetch-teams-members',
+    name: 'Fetch Teams Members',
+    entities: [],
+    relationships: [
       {
         _type: 'sentry_team_has_member',
         sourceType: 'sentry_team',
@@ -74,13 +106,13 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
         targetType: 'sentry_member',
       },
     ],
-    dependsOn: ['fetch-projects', 'fetch-members'],
+    dependsOn: ['fetch-teams'],
     implemented: false,
   },
   {
     /**
      * ENDPOINT: /api/0/organizations/{organization_slug}/projects/
-     * PATTERN: Fetch Entities? or Fetch Chiled Entities?
+     * PATTERN: Fetch Entities
      */
     id: 'fetch-projects',
     name: 'Fetch Projects',
@@ -91,8 +123,15 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
         _class: ['Project'],
       },
     ],
-    relationships: [],
-    dependsOn: [],
+    relationships: [
+      {
+        _type: 'sentry_organization_has_project',
+        sourceType: 'sentry_organization',
+        _class: RelationshipClass.HAS,
+        targetType: 'sentry_project',
+      },
+    ],
+    dependsOn: ['fetch-organization'],
     implemented: false,
   },
 ];
