@@ -7,17 +7,17 @@ export const accountSpec: StepSpec<IntegrationConfig>[] = [
      * ENDPOINT: n/a
      * PATTERN: Singleton
      */
-    id: 'fetch-account',
-    name: 'Fetch Account Details',
+    id: 'fetch-organization',
+    name: 'Fetch Organization Details',
     entities: [
       {
-        resourceName: 'Account',
-        _type: 'acme_account',
+        resourceName: 'Organization',
+        _type: 'sentry_organization',
         _class: ['Account'],
       },
     ],
     relationships: [],
     dependsOn: [],
-    implemented: true,
+    implemented: false,
   },
 ];
