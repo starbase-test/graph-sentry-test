@@ -1,0 +1,192 @@
+_type: export
+__export_format: 4
+__export_date: 2021-10-29T18:36:23.921Z
+__export_source: insomnia.desktop.app:v2021.6.0
+resources:
+  - _id: req_cd2260930bd3486599f2b41c6a843722
+    parentId: fld_a60f4e264da44448a6af23e08f7d470c
+    modified: 1635531921114
+    created: 1635528223098
+    url: https://sentry.io/api/0/organizations/{{organization_slug}}/users/
+    name: Get Users
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: "{{ sentry_dev_bearer_token }}"
+    metaSortKey: -1635528223098
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: fld_a60f4e264da44448a6af23e08f7d470c
+    parentId: wrk_b2d24ccfb75a46e587acfe2aced1cc00
+    modified: 1635531188631
+    created: 1635528227677
+    name: Sentry Dev
+    description: ""
+    environment:
+      organization_slug: jupiterone-integration-develop
+      team_slug: jupiterone-integration-develop
+    environmentPropertyOrder:
+      "&":
+        - organization_slug
+        - team_slug
+    metaSortKey: -1635528227677
+    _type: request_group
+  - _id: wrk_b2d24ccfb75a46e587acfe2aced1cc00
+    parentId: null
+    modified: 1635531341436
+    created: 1635528203404
+    name: Sentry
+    description: ""
+    scope: collection
+    _type: workspace
+  - _id: req_1941e6a911c943188de92fefe3331ddf
+    parentId: fld_a60f4e264da44448a6af23e08f7d470c
+    modified: 1635531374006
+    created: 1635528223097
+    url: https://sentry.io/api/0/organizations/jupiterone-integration-develop/sentry-app-installations/
+    name: Get Integration Installs
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: "{{ sentry_dev_bearer_token }}"
+    metaSortKey: -1635528223097
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_84ddc0c4f0cf49bf989d5859d0cd9f37
+    parentId: fld_a60f4e264da44448a6af23e08f7d470c
+    modified: 1635531370986
+    created: 1635528223096
+    url: https://sentry.io/api/0/organizations/{{organization_slug}}/projects/
+    name: Get Projects
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: "{{ sentry_dev_bearer_token }}"
+    metaSortKey: -1635528223096
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_49d6a35c22ff4671b8a61ba627f3da81
+    parentId: fld_a60f4e264da44448a6af23e08f7d470c
+    modified: 1635531367071
+    created: 1635528223094
+    url: https://sentry.io/api/0/organizations/
+    name: Get Organizations
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: "{{ sentry_dev_bearer_token }}"
+    metaSortKey: -1635528223094
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_1c50d6b35013433ba2cd1c9bab7299da
+    parentId: fld_a60f4e264da44448a6af23e08f7d470c
+    modified: 1635531359750
+    created: 1635528223093
+    url: https://sentry.io/api/0/organizations/{{organization_slug}}/teams/
+    name: Get Teams
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: "{{ sentry_dev_bearer_token }}"
+    metaSortKey: -1635528223093
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_0828b5093cc441a7b65555b53787df2d
+    parentId: fld_a60f4e264da44448a6af23e08f7d470c
+    modified: 1635531354339
+    created: 1635528223092
+    url: https://sentry.io/api/0/teams/{{team_slug}}/{{team_slug}}/members/
+    name: Get Team Members
+    description: ""
+    method: GET
+    body: {}
+    parameters: []
+    headers: []
+    authentication:
+      type: bearer
+      token: "{{ sentry_dev_bearer_token }}"
+    metaSortKey: -1635528223092
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: env_245d94c59a994851eca8574e72392e9f81c1dea3
+    parentId: wrk_b2d24ccfb75a46e587acfe2aced1cc00
+    modified: 1635531201330
+    created: 1635528203412
+    name: Base Environment
+    data: {}
+    dataPropertyOrder: {}
+    color: null
+    isPrivate: false
+    metaSortKey: 1635528203412
+    _type: environment
+  - _id: jar_245d94c59a994851eca8574e72392e9f81c1dea3
+    parentId: wrk_b2d24ccfb75a46e587acfe2aced1cc00
+    modified: 1635528203414
+    created: 1635528203414
+    name: Default Jar
+    cookies: []
+    _type: cookie_jar
+  - _id: spc_be0fbe584d884113b102bd27e2c7cbab
+    parentId: wrk_b2d24ccfb75a46e587acfe2aced1cc00
+    modified: 1635528203407
+    created: 1635528203407
+    fileName: Sentry Dev
+    contents: ""
+    contentType: yaml
+    _type: api_spec
