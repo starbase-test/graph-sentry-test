@@ -185,7 +185,7 @@ export const accessSteps: IntegrationStep<IntegrationConfig>[] = [
   },
   {
     id: Steps.USERS,
-    name: 'Fetch Users',
+    name: 'Fetch Members',
     entities: [Entities.MEMBER],
     relationships: [Relationships.ORGANIZATION_HAS_USER],
     dependsOn: [Steps.ORGANIZATIONS],
@@ -193,7 +193,7 @@ export const accessSteps: IntegrationStep<IntegrationConfig>[] = [
   },
   {
     id: Steps.USER_MEMBERSHIP,
-    name: 'Fetch User Assignments',
+    name: 'Fetch Teams Members',
     entities: [],
     relationships: [Relationships.TEAM_HAS_USER],
     dependsOn: [Steps.TEAMS, Steps.USERS],

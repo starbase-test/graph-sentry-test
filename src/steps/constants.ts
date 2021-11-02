@@ -5,11 +5,11 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 export const Steps = {
-  ORGANIZATIONS: 'fetch-organizations',
+  ORGANIZATIONS: 'fetch-organization',
   TEAMS: 'fetch-teams',
   PROJECTS: 'fetch-projects',
-  USERS: 'fetch-users',
-  USER_MEMBERSHIP: 'fetch-user-assigments',
+  USERS: 'fetch-members',
+  USER_MEMBERSHIP: 'fetch-teams-members',
 };
 
 export const Entities: Record<

@@ -1,5 +1,5 @@
 import {
-  IntegrationProviderAPIError,
+  IntegrationProviderAuthenticationError,
   IntegrationValidationError,
 } from '@jupiterone/integration-sdk-core';
 import {
@@ -35,6 +35,6 @@ it('auth error', async () => {
   });
 
   await expect(validateInvocation(executionContext)).rejects.toThrow(
-    IntegrationProviderAPIError,
+    IntegrationProviderAuthenticationError,
   );
 });

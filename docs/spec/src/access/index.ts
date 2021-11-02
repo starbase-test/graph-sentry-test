@@ -25,26 +25,7 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
       },
     ],
     dependsOn: ['fetch-organization'],
-    implemented: false,
-  },
-  {
-    /**
-     * ENDPOINT: /api/0/organizations/{organization_slug}/users/
-     * PATTERN: Build Child Relationships
-     */
-    id: 'fetch-member-projects',
-    name: 'Fetch Member Projects',
-    entities: [],
-    relationships: [
-      {
-        _type: 'sentry_project_has_member',
-        sourceType: 'sentry_project',
-        _class: RelationshipClass.HAS,
-        targetType: 'sentry_member',
-      },
-    ],
-    dependsOn: ['fetch-members'],
-    implemented: false,
+    implemented: true,
   },
   {
     /**
@@ -67,19 +48,6 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
         _class: RelationshipClass.HAS,
         targetType: 'sentry_team',
       },
-    ],
-    dependsOn: ['fetch-organization'],
-    implemented: false,
-  },
-  {
-    /**
-     * ENDPOINT: /api/0/organizations/{organization_slug}/teams/
-     * PATTERN: Build Child Relationships
-     */
-    id: 'fetch-teams-projects',
-    name: 'Fetch Teams Projects',
-    entities: [],
-    relationships: [
       {
         _type: 'sentry_team_assigned_project',
         sourceType: 'sentry_team',
@@ -87,12 +55,12 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
         targetType: 'sentry_project',
       },
     ],
-    dependsOn: ['fetch-teams'],
-    implemented: false,
+    dependsOn: ['fetch-organization', 'fetch-projects'],
+    implemented: true,
   },
   {
     /**
-     * ENDPOINT: /api/0/teams/{{team_name}}/{{team_name}}/members/
+     * ENDPOINT: /api/0/teams/{{organization_slug}}/{{team_name}}/members/
      * PATTERN: Build Child Relationships
      */
     id: 'fetch-teams-members',
@@ -106,8 +74,8 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
         targetType: 'sentry_member',
       },
     ],
-    dependsOn: ['fetch-teams'],
-    implemented: false,
+    dependsOn: ['fetch-teams', 'fetch-members'],
+    implemented: true,
   },
   {
     /**
@@ -132,6 +100,6 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
       },
     ],
     dependsOn: ['fetch-organization'],
-    implemented: false,
+    implemented: true,
   },
 ];

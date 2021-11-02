@@ -18,6 +18,7 @@ export async function fetchOrganizations({
   // const orgData = (await jobState.getData(ACCOUNT_ENTITY_KEY)) as Entity;
 
   await apiClient.iterateOrganizations(async (orgData) => {
+    //TODO, should we be filtering by a listed organization ID in the config?
     await jobState.addEntity(createOrganizationEntity(orgData));
   });
 }
@@ -25,7 +26,7 @@ export async function fetchOrganizations({
 export const organizationSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.ORGANIZATIONS,
-    name: 'Fetch Organizations',
+    name: 'Fetch Organization Details',
     entities: [Entities.ORGANIZATION],
     relationships: [],
     dependsOn: [],

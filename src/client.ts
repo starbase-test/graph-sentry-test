@@ -1,7 +1,7 @@
 import Axios, * as axios from 'axios';
 
 import {
-  IntegrationProviderAPIError,
+  IntegrationProviderAuthenticationError,
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
 
@@ -26,7 +26,7 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 export class APIClient {
   private axiosInstance: axios.AxiosInstance;
   private sentryBaseUrl: string;
-  private logger: IntegrationLogger;
+  // private logger: IntegrationLogger;
 
   constructor(readonly config: IntegrationConfig, logger: IntegrationLogger) {
     this.axiosInstance = Axios.create({
@@ -35,7 +35,7 @@ export class APIClient {
       },
     });
     this.sentryBaseUrl = 'https://sentry.io/api/0/';
-    this.logger = logger;
+    // this.logger = logger;
   }
 
   public async verifyAuthentication(): Promise<void> {
@@ -44,22 +44,13 @@ export class APIClient {
     try {
       await this.axiosInstance.get(this.sentryBaseUrl);
     } catch (err) {
-      this.logger.info(
-        {
-          err,
-        },
-        'Encounted error retrieving devices',
-      );
-
       const response = err.response || {};
 
-      if (response.status !== 200) {
-        throw new IntegrationProviderAPIError({
-          endpoint: this.sentryBaseUrl,
-          status: response.status,
-          statusText: response.statusText,
-        });
-      }
+      throw new IntegrationProviderAuthenticationError({
+        endpoint: this.sentryBaseUrl,
+        status: response.status,
+        statusText: response.statusText,
+      });
     }
   }
 
@@ -148,9 +139,9 @@ export class APIClient {
     orgSlug: string,
     teamSlug: string,
   ): Promise<void> {
+    //TODO look into pagination for this and above Axios calls.
     const url = `${this.sentryBaseUrl}teams/${orgSlug}/${teamSlug}/members/`;
 
-    console.log(`Getting team assignments with ${url}`);
     const teamAssignmentResponse = await this.axiosInstance.get(url);
     const teamAssignmentResults = teamAssignmentResponse.data;
 

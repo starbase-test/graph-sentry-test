@@ -10,7 +10,6 @@ import { Entities } from '../constants';
 import { SentryTeam, SentryProject, SentryUser } from '../../types';
 
 export function createSentryTeamEntity(team: SentryTeam) {
-  console.log(`createSentryTeamEntity with ${team.id}`);
   return createIntegrationEntity({
     entityData: {
       source: team,
@@ -26,7 +25,6 @@ export function createSentryTeamEntity(team: SentryTeam) {
 }
 
 export function createSentryProjectEntity(project: SentryProject) {
-  console.log(`createSentryProjectEntity with ${project.id}`);
   return createIntegrationEntity({
     entityData: {
       source: project,
@@ -34,13 +32,13 @@ export function createSentryProjectEntity(project: SentryProject) {
         _key: `sentry-project-${project.id}`,
         _type: Entities.PROJECT._type,
         _class: Entities.PROJECT._class,
+        name: project.name,
       },
     },
   });
 }
 
 export function createSentryUserEntity(user: SentryUser) {
-  console.log(`createSentryUserEntity with ${user.id}, ${user.email}`);
   return createIntegrationEntity({
     entityData: {
       source: user,
