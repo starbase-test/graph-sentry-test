@@ -11,15 +11,27 @@ export interface AcmeGroup {
   users?: Pick<AcmeUser, 'id'>[];
 }
 
-// Those can be useful to a degree, but often they're just full of optional
-// values. Understanding the response data may be more reliably accomplished by
-// reviewing the API response recordings produced by testing the wrapper client
-// (./client.ts). However, when there are no types provided, it is necessary to define
-// opaque types for each resource, to communicate the records that are expected
-// to come from an endpoint and are provided to iterating functions.
+export interface SentryOrganization {
+  id: string;
+  name: string;
+  slug: string;
+}
 
-/*
-import { Opaque } from 'type-fest';
-export type AcmeUser = Opaque<any, 'AcmeUser'>;
-export type AcmeGroup = Opaque<any, 'AcmeGroup'>;
-*/
+export interface SentryTeam {
+  id: string;
+  name: string;
+  slug: string;
+  projects: SentryProject[];
+}
+
+export interface SentryProject {
+  id: string;
+  name: string;
+}
+
+export interface SentryUser {
+  id: string;
+  name: string;
+  email: string;
+  projects: SentryProject[];
+}

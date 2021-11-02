@@ -1,9 +1,17 @@
-import http from 'http';
+import Axios, * as axios from 'axios';
 
-import { IntegrationProviderAuthenticationError } from '@jupiterone/integration-sdk-core';
+import {
+  IntegrationProviderAPIError,
+  IntegrationLogger,
+} from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
-import { AcmeUser, AcmeGroup } from './types';
+import {
+  SentryOrganization,
+  SentryTeam,
+  SentryProject,
+  SentryUser,
+} from './types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -16,40 +24,98 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
  * resources.
  */
 export class APIClient {
-  constructor(readonly config: IntegrationConfig) {}
+  private axiosInstance: axios.AxiosInstance;
+  private sentryBaseUrl: string;
+  private logger: IntegrationLogger;
+
+  constructor(readonly config: IntegrationConfig, logger: IntegrationLogger) {
+    this.axiosInstance = Axios.create({
+      headers: {
+        Authorization: 'Bearer ' + config.clientToken,
+      },
+    });
+    this.sentryBaseUrl = 'https://sentry.io/api/0/';
+    this.logger = logger;
+  }
 
   public async verifyAuthentication(): Promise<void> {
-    // TODO make the most light-weight request possible to validate
-    // authentication works with the provided credentials, throw an err if
-    // authentication fails
-    const request = new Promise<void>((resolve, reject) => {
-      http.get(
-        {
-          hostname: 'localhost',
-          port: 443,
-          path: '/api/v1/some/endpoint?limit=1',
-          agent: false,
-          timeout: 10,
-        },
-        (res) => {
-          if (res.statusCode !== 200) {
-            reject(new Error('Provider authentication failed'));
-          } else {
-            resolve();
-          }
-        },
-      );
-    });
-
+    // A call to the baseURL will return a valid 200 status as long as we have a
+    // valid bearer token for authentication.
     try {
-      await request;
+      await this.axiosInstance.get(this.sentryBaseUrl);
     } catch (err) {
-      throw new IntegrationProviderAuthenticationError({
-        cause: err,
-        endpoint: 'https://localhost/api/v1/some/endpoint?limit=1',
-        status: err.status,
-        statusText: err.statusText,
-      });
+      this.logger.info(
+        {
+          err,
+        },
+        'Encounted error retrieving devices',
+      );
+
+      const response = err.response || {};
+
+      if (response.status !== 200) {
+        throw new IntegrationProviderAPIError({
+          endpoint: this.sentryBaseUrl,
+          status: response.status,
+          statusText: response.statusText,
+        });
+      }
+    }
+  }
+
+  /**
+   * Iterates each group resource in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateOrganizations(
+    iteratee: ResourceIteratee<SentryOrganization>,
+  ): Promise<void> {
+    const url = this.sentryBaseUrl + 'organizations/';
+
+    const orgResponse = await this.axiosInstance.get(url);
+    const orgResults = orgResponse.data;
+
+    for (const organization of orgResults) {
+      await iteratee(organization);
+    }
+  }
+
+  /**
+   * Iterates each group resource in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateTeams(
+    iteratee: ResourceIteratee<SentryTeam>,
+    organizationSlug: string,
+  ): Promise<void> {
+    const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/teams/`;
+
+    const teamResponse = await this.axiosInstance.get(url);
+    const teamResults = teamResponse.data;
+
+    for (const team of teamResults) {
+      await iteratee(team);
+    }
+  }
+
+  /**
+   * Iterates each group resource in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateProjects(
+    iteratee: ResourceIteratee<SentryProject>,
+    organizationSlug: string,
+  ): Promise<void> {
+    const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/projects/`;
+
+    const projectResponse = await this.axiosInstance.get(url);
+    const projectResults = projectResponse.data;
+
+    for (const project of projectResults) {
+      await iteratee(project);
     }
   }
 
@@ -59,28 +125,15 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateUsers(
-    iteratee: ResourceIteratee<AcmeUser>,
+    iteratee: ResourceIteratee<SentryUser>,
+    organizationSlug: string,
   ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
+    const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/users/`;
 
-    const users: AcmeUser[] = [
-      {
-        id: 'acme-user-1',
-        name: 'User One',
-      },
-      {
-        id: 'acme-user-2',
-        name: 'User Two',
-      },
-    ];
+    const userResponse = await this.axiosInstance.get(url);
+    const userResults = userResponse.data;
 
-    for (const user of users) {
+    for (const user of userResults) {
       await iteratee(user);
     }
   }
@@ -90,35 +143,26 @@ export class APIClient {
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateGroups(
-    iteratee: ResourceIteratee<AcmeGroup>,
+  public async iterateTeamAssignments(
+    iteratee: ResourceIteratee<SentryUser>,
+    orgSlug: string,
+    teamSlug: string,
   ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
+    const url = `${this.sentryBaseUrl}teams/${orgSlug}/${teamSlug}/members/`;
 
-    const groups: AcmeGroup[] = [
-      {
-        id: 'acme-group-1',
-        name: 'Group One',
-        users: [
-          {
-            id: 'acme-user-1',
-          },
-        ],
-      },
-    ];
+    console.log(`Getting team assignments with ${url}`);
+    const teamAssignmentResponse = await this.axiosInstance.get(url);
+    const teamAssignmentResults = teamAssignmentResponse.data;
 
-    for (const group of groups) {
-      await iteratee(group);
+    for (const member of teamAssignmentResults) {
+      await iteratee(member);
     }
   }
 }
 
-export function createAPIClient(config: IntegrationConfig): APIClient {
-  return new APIClient(config);
+export function createAPIClient(
+  config: IntegrationConfig,
+  logger: IntegrationLogger,
+): APIClient {
+  return new APIClient(config, logger);
 }

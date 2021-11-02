@@ -96,11 +96,12 @@ https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md
 
 The following entities are created:
 
-| Resources | Entity `_type` | Entity `_class` |
-| --------- | -------------- | --------------- |
-| Account   | `acme_account` | `Account`       |
-| User      | `acme_user`    | `User`          |
-| UserGroup | `acme_group`   | `UserGroup`     |
+| Resources    | Entity `_type`        | Entity `_class` |
+| ------------ | --------------------- | --------------- |
+| Member       | `sentry_member`       | `User`          |
+| Organization | `sentry_organization` | `Account`       |
+| Project      | `sentry_project`      | `Project`       |
+| Team         | `sentry_team`         | `UserGroup`     |
 
 ### Relationships
 
@@ -108,9 +109,11 @@ The following relationships are created:
 
 | Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
 | --------------------- | --------------------- | --------------------- |
-| `acme_account`        | **HAS**               | `acme_group`          |
-| `acme_account`        | **HAS**               | `acme_user`           |
-| `acme_group`          | **HAS**               | `acme_user`           |
+| `sentry_organization` | **HAS**               | `sentry_member`       |
+| `sentry_organization` | **HAS**               | `sentry_project`      |
+| `sentry_organization` | **HAS**               | `sentry_team`         |
+| `sentry_team`         | **ASSIGNED**          | `sentry_project`      |
+| `sentry_team`         | **HAS**               | `sentry_member`       |
 
 <!--
 ********************************************************************************

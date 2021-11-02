@@ -1,5 +1,5 @@
 import {
-  IntegrationProviderAuthenticationError,
+  IntegrationProviderAPIError,
   IntegrationValidationError,
 } from '@jupiterone/integration-sdk-core';
 import {
@@ -30,12 +30,11 @@ it('auth error', async () => {
 
   const executionContext = createMockExecutionContext({
     instanceConfig: {
-      clientId: 'INVALID',
-      clientSecret: 'INVALID',
+      clientToken: 'INVALID',
     },
   });
 
   await expect(validateInvocation(executionContext)).rejects.toThrow(
-    IntegrationProviderAuthenticationError,
+    IntegrationProviderAPIError,
   );
 });

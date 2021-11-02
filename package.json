@@ -32,5 +32,8 @@
     "@jupiterone/integration-sdk-core": "^6.19.0",
     "@jupiterone/integration-sdk-dev-tools": "^6.19.0",
     "@jupiterone/integration-sdk-testing": "^6.19.0"
+  },
+  "dependencies": {
+    "axios": "^0.24.0"
   }
 }
