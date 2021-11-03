@@ -26,7 +26,7 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 export class APIClient {
   private axiosInstance: axios.AxiosInstance;
   private sentryBaseUrl: string;
-  // private logger: IntegrationLogger;
+  private sentryOrganization: string | null;
 
   constructor(readonly config: IntegrationConfig, logger: IntegrationLogger) {
     this.axiosInstance = Axios.create({
@@ -35,6 +35,9 @@ export class APIClient {
       },
     });
     this.sentryBaseUrl = 'https://sentry.io/api/0/';
+
+    this.sentryOrganization = config.organization;
+
     // this.logger = logger;
   }
 
@@ -62,8 +65,13 @@ export class APIClient {
   public async iterateOrganizations(
     iteratee: ResourceIteratee<SentryOrganization>,
   ): Promise<void> {
-    const url = this.sentryBaseUrl + 'organizations/';
+    let url = this.sentryBaseUrl + 'organizations/';
     let moreData = true;
+
+    //optionally add org_slug if it was provided in .env
+    if (this.sentryOrganization) {
+      url += `${this.sentryOrganization}/`;
+    }
 
     while (moreData) {
       const orgResponse = await this.axiosInstance.get(url);
@@ -72,8 +80,14 @@ export class APIClient {
       const orgHeaders = orgResponse.headers;
       moreData = Boolean(orgHeaders.results); //results=true when more than 100 results are available
 
-      for (const organization of orgResults) {
-        await iteratee(organization);
+      // Organization is an oddity in that it may at times only return a single object
+      // instead of an iterable array.  Check for an iterator before proceeding.
+      if (orgResults && typeof orgResults[Symbol.iterator] === 'function') {
+        for (const organization of orgResults) {
+          await iteratee(organization);
+        }
+      } else {
+        await iteratee(orgResults);
       }
     }
   }

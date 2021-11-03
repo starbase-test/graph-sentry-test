@@ -47,6 +47,7 @@ export function createSentryUserEntity(user: SentryUser) {
         _type: Entities.MEMBER._type,
         _class: Entities.MEMBER._class,
         username: user.email,
+        twoFactorEnabled: user.user.has2fa,
       },
     },
   });

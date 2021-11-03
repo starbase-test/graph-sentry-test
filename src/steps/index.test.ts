@@ -70,6 +70,7 @@ test('should collect data', async () => {
       properties: {
         _type: { const: 'sentry_member' },
         username: { type: 'string' },
+        twoFactorEnabled: { type: 'boolean' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },

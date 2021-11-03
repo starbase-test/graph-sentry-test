@@ -25,6 +25,10 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
     type: 'string',
     mask: true,
   },
+  organization: {
+    type: 'string',
+    mask: true,
+  },
 };
 
 /**
@@ -36,6 +40,10 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * The provider API token used to authenticate requests.
    */
   clientToken: string;
+  /**
+   * Optional value to specify a single organization if the authentication has access to multiple.
+   */
+  organization: string | null;
 }
 
 export async function validateInvocation(

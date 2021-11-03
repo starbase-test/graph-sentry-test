@@ -11,4 +11,5 @@ const DEFAULT_CLIENT_TOKEN = 'dummy-bearer-token';
 
 export const integrationConfig: IntegrationConfig = {
   clientToken: process.env.CLIENT_TOKEN || DEFAULT_CLIENT_TOKEN,
+  organization: process.env.ORGANIZATION || null,
 };

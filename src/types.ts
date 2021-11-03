@@ -1,16 +1,3 @@
-// Providers often supply types with their API libraries.
-
-export interface AcmeUser {
-  id: string;
-  name: string;
-}
-
-export interface AcmeGroup {
-  id: string;
-  name: string;
-  users?: Pick<AcmeUser, 'id'>[];
-}
-
 export interface SentryOrganization {
   id: string;
   name: string;
@@ -33,5 +20,6 @@ export interface SentryUser {
   id: string;
   name: string;
   email: string;
+  user: { has2fa: boolean };
   projects: SentryProject[];
 }
