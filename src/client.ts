@@ -63,12 +63,18 @@ export class APIClient {
     iteratee: ResourceIteratee<SentryOrganization>,
   ): Promise<void> {
     const url = this.sentryBaseUrl + 'organizations/';
+    let moreData = true;
 
-    const orgResponse = await this.axiosInstance.get(url);
-    const orgResults = orgResponse.data;
+    while (moreData) {
+      const orgResponse = await this.axiosInstance.get(url);
+      const orgResults = orgResponse.data;
 
-    for (const organization of orgResults) {
-      await iteratee(organization);
+      const orgHeaders = orgResponse.headers;
+      moreData = Boolean(orgHeaders.results); //results=true when more than 100 results are available
+
+      for (const organization of orgResults) {
+        await iteratee(organization);
+      }
     }
   }
 
@@ -76,18 +82,25 @@ export class APIClient {
    * Iterates each group resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
+   * @param orgSlug added to URL to specify correct Sentry organization
    */
   public async iterateTeams(
     iteratee: ResourceIteratee<SentryTeam>,
     organizationSlug: string,
   ): Promise<void> {
     const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/teams/`;
+    let moreData = true;
 
-    const teamResponse = await this.axiosInstance.get(url);
-    const teamResults = teamResponse.data;
+    while (moreData) {
+      const teamResponse = await this.axiosInstance.get(url);
+      const teamResults = teamResponse.data;
 
-    for (const team of teamResults) {
-      await iteratee(team);
+      const teamHeaders = teamResponse.headers;
+      moreData = Boolean(teamHeaders.results); //results=true when more than 100 results are available
+
+      for (const team of teamResults) {
+        await iteratee(team);
+      }
     }
   }
 
@@ -95,18 +108,25 @@ export class APIClient {
    * Iterates each group resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
+   * @param orgSlug added to URL to specify correct Sentry organization
    */
   public async iterateProjects(
     iteratee: ResourceIteratee<SentryProject>,
     organizationSlug: string,
   ): Promise<void> {
     const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/projects/`;
+    let moreData = true;
 
-    const projectResponse = await this.axiosInstance.get(url);
-    const projectResults = projectResponse.data;
+    while (moreData) {
+      const projectResponse = await this.axiosInstance.get(url);
+      const projectResults = projectResponse.data;
 
-    for (const project of projectResults) {
-      await iteratee(project);
+      const projectHeaders = projectResponse.headers;
+      moreData = Boolean(projectHeaders.results); //results=true when more than 100 results are available
+
+      for (const project of projectResults) {
+        await iteratee(project);
+      }
     }
   }
 
@@ -114,18 +134,25 @@ export class APIClient {
    * Iterates each user resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
+   * @param orgSlug added to URL to specify correct Sentry organization
    */
   public async iterateUsers(
     iteratee: ResourceIteratee<SentryUser>,
     organizationSlug: string,
   ): Promise<void> {
     const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/users/`;
+    let moreData = true;
 
-    const userResponse = await this.axiosInstance.get(url);
-    const userResults = userResponse.data;
+    while (moreData) {
+      const userResponse = await this.axiosInstance.get(url);
+      const userResults = userResponse.data;
 
-    for (const user of userResults) {
-      await iteratee(user);
+      const userHeaders = userResponse.headers;
+      moreData = Boolean(userHeaders.results); //results=true when more than 100 results are available
+
+      for (const user of userResults) {
+        await iteratee(user);
+      }
     }
   }
 
@@ -133,20 +160,27 @@ export class APIClient {
    * Iterates each group resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
+   * @param orgSlug added to URL to specify correct Sentry organization
+   * @param teamSlug added to URL to specify correct Sentry team
    */
   public async iterateTeamAssignments(
     iteratee: ResourceIteratee<SentryUser>,
     orgSlug: string,
     teamSlug: string,
   ): Promise<void> {
-    //TODO look into pagination for this and above Axios calls.
     const url = `${this.sentryBaseUrl}teams/${orgSlug}/${teamSlug}/members/`;
+    let moreData = true;
 
-    const teamAssignmentResponse = await this.axiosInstance.get(url);
-    const teamAssignmentResults = teamAssignmentResponse.data;
+    while (moreData) {
+      const teamAssignmentResponse = await this.axiosInstance.get(url);
+      const teamAssignmentResults = teamAssignmentResponse.data;
 
-    for (const member of teamAssignmentResults) {
-      await iteratee(member);
+      const teamAssignmentHeaders = teamAssignmentResponse.headers;
+      moreData = Boolean(teamAssignmentHeaders.results); //results=true when more than 100 results are available
+
+      for (const member of teamAssignmentResults) {
+        await iteratee(member);
+      }
     }
   }
 }
