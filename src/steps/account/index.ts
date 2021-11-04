@@ -14,10 +14,7 @@ export async function fetchOrganizations({
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const apiClient = createAPIClient(instance.config);
 
-  // const orgData = (await jobState.getData(ACCOUNT_ENTITY_KEY)) as Entity;
-
   await apiClient.iterateOrganizations(async (orgData) => {
-    //TODO, should we be filtering by a listed organization ID in the config?
     await jobState.addEntity(createOrganizationEntity(orgData));
   });
 }

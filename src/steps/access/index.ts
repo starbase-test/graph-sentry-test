@@ -92,16 +92,6 @@ export async function fetchUsers({
           await jobState.addRelationship(
             createSentryUserRelationship(organization, userEntity),
           );
-
-          // for (const project of userData.projects) {
-          //I don't think this will work because they're listed by slug and not ID in the user payload.
-          //Additionally, based on how the frontend works, it appears that users aren't directly associated
-          //with a given project, but are instead associated via a team membership.
-          // const projectEntity = await jobState.findEntity(`sentry-project-${project.id}`);
-          // if(projectEntity) {
-          //   await jobState.addRelationship(createSentryUserRelationship(projectEntity, userEntity));
-          // }
-          // }
         }, organizationSlug);
       }
     },
@@ -146,17 +136,6 @@ export async function fetchUserAssignments({
       }
     },
   );
-
-  //     const teamSlug: string  = String(team.slug);
-  //     if(teamSlug) {
-  //       await apiClient.iterateTeamAssignments(async (teamMember) => {
-  //         const userEntity = await jobState.findEntity(`sentry-user-${teamMember.id}`);
-  //         if(userEntity) {
-  //           await jobState.addRelationship(createSentryUserRelationship(team, userEntity));
-  //         }
-  //     }, teamSlug);
-  //   }
-  // });
 }
 
 export const accessSteps: IntegrationStep<IntegrationConfig>[] = [
