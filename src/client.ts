@@ -1,9 +1,6 @@
 import Axios, * as axios from 'axios';
 
-import {
-  IntegrationProviderAuthenticationError,
-  IntegrationLogger,
-} from '@jupiterone/integration-sdk-core';
+import { IntegrationProviderAuthenticationError } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
 import {
@@ -28,7 +25,7 @@ export class APIClient {
   private sentryBaseUrl: string;
   private sentryOrganization: string | null;
 
-  constructor(readonly config: IntegrationConfig, logger: IntegrationLogger) {
+  constructor(readonly config: IntegrationConfig) {
     this.axiosInstance = Axios.create({
       headers: {
         Authorization: 'Bearer ' + config.clientToken,
@@ -37,8 +34,6 @@ export class APIClient {
     this.sentryBaseUrl = 'https://sentry.io/api/0/';
 
     this.sentryOrganization = config.organization;
-
-    // this.logger = logger;
   }
 
   public async verifyAuthentication(): Promise<void> {
@@ -199,9 +194,6 @@ export class APIClient {
   }
 }
 
-export function createAPIClient(
-  config: IntegrationConfig,
-  logger: IntegrationLogger,
-): APIClient {
-  return new APIClient(config, logger);
+export function createAPIClient(config: IntegrationConfig): APIClient {
+  return new APIClient(config);
 }

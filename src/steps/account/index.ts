@@ -11,9 +11,8 @@ import { createOrganizationEntity } from './converter';
 export async function fetchOrganizations({
   instance,
   jobState,
-  logger,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const apiClient = createAPIClient(instance.config, logger);
+  const apiClient = createAPIClient(instance.config);
 
   // const orgData = (await jobState.getData(ACCOUNT_ENTITY_KEY)) as Entity;
 

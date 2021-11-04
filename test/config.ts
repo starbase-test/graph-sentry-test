@@ -8,8 +8,9 @@ if (process.env.LOAD_ENV) {
   });
 }
 const DEFAULT_CLIENT_TOKEN = 'dummy-bearer-token';
+const DEFAULT_ORG = 'jupiterone-integration-develop';
 
 export const integrationConfig: IntegrationConfig = {
   clientToken: process.env.CLIENT_TOKEN || DEFAULT_CLIENT_TOKEN,
-  organization: process.env.ORGANIZATION || null,
+  organization: process.env.ORGANIZATION || DEFAULT_ORG,
 };

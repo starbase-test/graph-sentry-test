@@ -50,14 +50,13 @@ export async function validateInvocation(
   context: IntegrationExecutionContext<IntegrationConfig>,
 ) {
   const { config } = context.instance;
-  const logger = context.logger;
 
-  if (!config.clientToken) {
+  if (!config.clientToken || !config.organization) {
     throw new IntegrationValidationError(
-      'Config requires all of {clientToken}',
+      'Config requires all of {clientToken, organization}',
     );
   }
 
-  const apiClient = createAPIClient(config, logger);
+  const apiClient = createAPIClient(config);
   await apiClient.verifyAuthentication();
 }

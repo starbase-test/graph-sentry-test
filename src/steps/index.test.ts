@@ -13,6 +13,10 @@ import { Recording, setupSentryRecording } from '../../test/recording';
 
 let recording: Recording;
 
+function isRecordingEnabled() {
+  return Boolean(process.env.LOAD_ENV) === true;
+}
+
 test('should collect data', async () => {
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,
@@ -20,6 +24,9 @@ test('should collect data', async () => {
   recording = setupSentryRecording({
     directory: __dirname,
     name: 'should collect data',
+    options: {
+      mode: isRecordingEnabled() ? 'record' : 'replay',
+    },
   });
 
   // Simulates dependency graph execution.

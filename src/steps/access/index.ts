@@ -19,9 +19,8 @@ import {
 export async function fetchProjects({
   instance,
   jobState,
-  logger,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const apiClient = createAPIClient(instance.config, logger);
+  const apiClient = createAPIClient(instance.config);
   await jobState.iterateEntities(
     { _type: Entities.ORGANIZATION._type },
     async (organization) => {
@@ -43,9 +42,8 @@ export async function fetchProjects({
 export async function fetchTeams({
   instance,
   jobState,
-  logger,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const apiClient = createAPIClient(instance.config, logger);
+  const apiClient = createAPIClient(instance.config);
   await jobState.iterateEntities(
     { _type: Entities.ORGANIZATION._type },
     async (organization) => {
@@ -80,9 +78,8 @@ export async function fetchTeams({
 export async function fetchUsers({
   instance,
   jobState,
-  logger,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const apiClient = createAPIClient(instance.config, logger);
+  const apiClient = createAPIClient(instance.config);
   await jobState.iterateEntities(
     { _type: Entities.ORGANIZATION._type },
     async (organization) => {
@@ -114,9 +111,8 @@ export async function fetchUsers({
 export async function fetchUserAssignments({
   instance,
   jobState,
-  logger,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const apiClient = createAPIClient(instance.config, logger);
+  const apiClient = createAPIClient(instance.config);
   await jobState.iterateRelationships(
     { _type: Relationships.ORGANIZATION_HAS_TEAM._type },
     async (orgHasTeam) => {
