@@ -7,6 +7,7 @@ import {
   fetchTeams,
   fetchUserAssignments,
   fetchProjects,
+  fetchTeamsAssignments,
 } from './access';
 import { integrationConfig } from '../../test/config';
 import { Recording, setupSentryRecording } from '../../test/recording';
@@ -34,6 +35,7 @@ test('should collect data', async () => {
   await fetchOrganizations(context);
   await fetchProjects(context);
   await fetchTeams(context);
+  await fetchTeamsAssignments(context);
   await fetchUsers(context);
   await fetchUserAssignments(context);
 
@@ -77,7 +79,8 @@ test('should collect data', async () => {
       properties: {
         _type: { const: 'sentry_member' },
         username: { type: 'string' },
-        twoFactorEnabled: { type: 'boolean' },
+        role: { type: 'string' },
+        mfaEnabled: { type: 'boolean' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },

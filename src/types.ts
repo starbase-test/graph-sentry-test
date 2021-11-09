@@ -20,6 +20,7 @@ export interface SentryUser {
   id: string;
   name: string;
   email: string;
+  role: string;
   user: { has2fa: boolean };
-  projects: SentryProject[];
+  projects?: SentryProject[];
 }
