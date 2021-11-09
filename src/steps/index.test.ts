@@ -1,21 +1,43 @@
 import { createMockStepExecutionContext } from '@jupiterone/integration-sdk-testing';
 
 import { IntegrationConfig } from '../config';
-import { buildGroupUserRelationships, fetchGroups, fetchUsers } from './access';
-import { fetchAccountDetails } from './account';
+import { fetchOrganizations } from './account';
+import {
+  fetchUsers,
+  fetchTeams,
+  fetchUserAssignments,
+  fetchProjects,
+  fetchTeamsAssignments,
+} from './access';
 import { integrationConfig } from '../../test/config';
+import { Recording, setupSentryRecording } from '../../test/recording';
+
+let recording: Recording;
+
+function isRecordingEnabled() {
+  return Boolean(process.env.LOAD_ENV) === true;
+}
 
 test('should collect data', async () => {
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,
   });
+  recording = setupSentryRecording({
+    directory: __dirname,
+    name: 'should collect data',
+    options: {
+      mode: isRecordingEnabled() ? 'record' : 'replay',
+    },
+  });
 
   // Simulates dependency graph execution.
   // See https://github.com/JupiterOne/sdk/issues/262.
-  await fetchAccountDetails(context);
+  await fetchOrganizations(context);
+  await fetchProjects(context);
+  await fetchTeams(context);
+  await fetchTeamsAssignments(context);
   await fetchUsers(context);
-  await fetchGroups(context);
-  await buildGroupUserRelationships(context);
+  await fetchUserAssignments(context);
 
   // Review snapshot, failure is a regression
   expect({
@@ -35,14 +57,14 @@ test('should collect data', async () => {
     schema: {
       additionalProperties: false,
       properties: {
-        _type: { const: 'acme_account' },
-        manager: { type: 'string' },
+        _type: { const: 'sentry_organization' },
+        slug: { type: 'string' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['manager'],
+      required: ['slug'],
     },
   });
 
@@ -55,14 +77,16 @@ test('should collect data', async () => {
     schema: {
       additionalProperties: false,
       properties: {
-        _type: { const: 'acme_user' },
-        firstName: { type: 'string' },
+        _type: { const: 'sentry_member' },
+        username: { type: 'string' },
+        role: { type: 'string' },
+        mfaEnabled: { type: 'boolean' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['firstName'],
+      required: ['username'],
     },
   });
 
@@ -75,18 +99,38 @@ test('should collect data', async () => {
     schema: {
       additionalProperties: false,
       properties: {
-        _type: { const: 'acme_group' },
-        logoLink: {
-          type: 'string',
-          // Validate that the `logoLink` property has a URL format
-          format: 'url',
-        },
+        _type: { const: 'sentry_team' },
+        slug: { type: 'string' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['logoLink'],
+      required: ['slug'],
     },
   });
+
+  const projects = context.jobState.collectedEntities.filter((e) =>
+    e._class.includes('Project'),
+  );
+  expect(projects.length).toBeGreaterThan(0);
+  expect(projects).toMatchGraphObjectSchema({
+    _class: ['Project'],
+    schema: {
+      additionalProperties: false,
+      properties: {
+        _type: { const: 'sentry_project' },
+        name: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['name'],
+    },
+  });
+
+  if (recording) {
+    await recording.stop();
+  }
 });

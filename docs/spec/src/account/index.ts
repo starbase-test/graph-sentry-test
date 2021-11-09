@@ -18,6 +18,6 @@ export const accountSpec: StepSpec<IntegrationConfig>[] = [
     ],
     relationships: [],
     dependsOn: [],
-    implemented: false,
+    implemented: true,
   },
 ];

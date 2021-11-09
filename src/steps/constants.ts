@@ -5,53 +5,76 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 export const Steps = {
-  ACCOUNT: 'fetch-account',
-  USERS: 'fetch-users',
-  GROUPS: 'fetch-groups',
-  GROUP_USER_RELATIONSHIPS: 'build-user-group-relationships',
+  ORGANIZATIONS: 'fetch-organization',
+  TEAMS: 'fetch-teams',
+  TEAMS_ASSIGNED_PROJECT: 'fetch-teams-assignments',
+  PROJECTS: 'fetch-projects',
+  USERS: 'fetch-members',
+  USER_MEMBERSHIP: 'fetch-teams-members',
 };
 
 export const Entities: Record<
-  'ACCOUNT' | 'GROUP' | 'USER',
+  'ORGANIZATION' | 'TEAM' | 'PROJECT' | 'MEMBER',
   StepEntityMetadata
 > = {
-  ACCOUNT: {
-    resourceName: 'Account',
-    _type: 'acme_account',
+  ORGANIZATION: {
+    resourceName: 'Organization',
+    _type: 'sentry_organization',
     _class: ['Account'],
   },
-  GROUP: {
-    resourceName: 'UserGroup',
-    _type: 'acme_group',
+  TEAM: {
+    resourceName: 'Team',
+    _type: 'sentry_team',
     _class: ['UserGroup'],
   },
-  USER: {
-    resourceName: 'User',
-    _type: 'acme_user',
+  PROJECT: {
+    resourceName: 'Project',
+    _type: 'sentry_project',
+    _class: ['Project'],
+  },
+  MEMBER: {
+    resourceName: 'Member',
+    _type: 'sentry_member',
     _class: ['User'],
   },
 };
 
 export const Relationships: Record<
-  'ACCOUNT_HAS_USER' | 'ACCOUNT_HAS_GROUP' | 'GROUP_HAS_USER',
+  | 'ORGANIZATION_HAS_TEAM'
+  | 'ORGANIZATION_HAS_PROJECT'
+  | 'ORGANIZATION_HAS_USER'
+  | 'TEAM_ASSIGNED_PROJECT'
+  | 'TEAM_HAS_USER',
   StepRelationshipMetadata
 > = {
-  ACCOUNT_HAS_USER: {
-    _type: 'acme_account_has_user',
-    sourceType: Entities.ACCOUNT._type,
+  ORGANIZATION_HAS_TEAM: {
+    _type: 'sentry_organization_has_team',
+    sourceType: Entities.ORGANIZATION._type,
     _class: RelationshipClass.HAS,
-    targetType: Entities.USER._type,
+    targetType: Entities.TEAM._type,
   },
-  ACCOUNT_HAS_GROUP: {
-    _type: 'acme_account_has_group',
-    sourceType: Entities.ACCOUNT._type,
+  ORGANIZATION_HAS_PROJECT: {
+    _type: 'sentry_organization_has_project',
+    sourceType: Entities.ORGANIZATION._type,
     _class: RelationshipClass.HAS,
-    targetType: Entities.GROUP._type,
+    targetType: Entities.PROJECT._type,
   },
-  GROUP_HAS_USER: {
-    _type: 'acme_group_has_user',
-    sourceType: Entities.GROUP._type,
+  ORGANIZATION_HAS_USER: {
+    _type: 'sentry_organization_has_member',
+    sourceType: Entities.ORGANIZATION._type,
     _class: RelationshipClass.HAS,
-    targetType: Entities.USER._type,
+    targetType: Entities.MEMBER._type,
+  },
+  TEAM_ASSIGNED_PROJECT: {
+    _type: 'sentry_team_assigned_project',
+    sourceType: Entities.TEAM._type,
+    _class: RelationshipClass.ASSIGNED,
+    targetType: Entities.PROJECT._type,
+  },
+  TEAM_HAS_USER: {
+    _type: 'sentry_team_has_member',
+    sourceType: Entities.TEAM._type,
+    _class: RelationshipClass.HAS,
+    targetType: Entities.MEMBER._type,
   },
 };

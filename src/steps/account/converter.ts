@@ -2,24 +2,21 @@ import {
   createIntegrationEntity,
   Entity,
 } from '@jupiterone/integration-sdk-core';
+import { SentryOrganization } from '../../types';
 
 import { Entities } from '../constants';
 
-export function createAccountEntity(): Entity {
+export function createOrganizationEntity(
+  organization: SentryOrganization,
+): Entity {
   return createIntegrationEntity({
     entityData: {
-      source: {
-        id: 'acme-unique-account-id',
-        name: 'Example Co. Acme Account',
-      },
+      source: organization,
       assign: {
-        _key: 'acme-unique-account-id',
-        _type: Entities.ACCOUNT._type,
-        _class: Entities.ACCOUNT._class,
-        mfaEnabled: true,
-        // This is a custom property that is not a part of the data model class
-        // hierarchy. See: https://github.com/JupiterOne/data-model/blob/master/src/schemas/Account.json
-        manager: 'Manager Name',
+        _key: `sentry-organization-${organization.id}`,
+        _type: Entities.ORGANIZATION._type,
+        _class: Entities.ORGANIZATION._class,
+        slug: organization.slug,
       },
     },
   });

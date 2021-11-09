@@ -1,85 +1,150 @@
 import {
-  Entity,
+  getRawData,
   IntegrationStep,
   IntegrationStepExecutionContext,
-  IntegrationMissingKeyError,
-  getRawData,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../../client';
 import { IntegrationConfig } from '../../config';
-import { AcmeGroup } from '../../types';
-import { ACCOUNT_ENTITY_KEY } from '../account';
+import { SentryTeam } from '../../types';
 import { Entities, Steps, Relationships } from '../constants';
 import {
-  createAccountGroupRelationship,
-  createAccountUserRelationship,
-  createGroupEntity,
-  createGroupUserRelationship,
-  createUserEntity,
+  createSentryProjectEntity,
+  createSentryProjectRelationship,
+  createSentryTeamAssignedProjectRelationship,
+  createSentryTeamEntity,
+  createSentryTeamRelationship,
+  createSentryUserEntity,
+  createSentryUserRelationship,
 } from './converter';
+
+export async function fetchProjects({
+  instance,
+  jobState,
+}: IntegrationStepExecutionContext<IntegrationConfig>) {
+  const apiClient = createAPIClient(instance.config);
+  await jobState.iterateEntities(
+    { _type: Entities.ORGANIZATION._type },
+    async (organization) => {
+      const organizationSlug: string = String(organization.slug);
+      if (organizationSlug) {
+        await apiClient.iterateProjects(
+          organizationSlug,
+          async (projectData) => {
+            const projectEntity = await jobState.addEntity(
+              createSentryProjectEntity(projectData),
+            );
+            await jobState.addRelationship(
+              createSentryProjectRelationship(organization, projectEntity),
+            );
+          },
+        );
+      }
+    },
+  );
+}
+
+export async function fetchTeams({
+  instance,
+  jobState,
+}: IntegrationStepExecutionContext<IntegrationConfig>) {
+  const apiClient = createAPIClient(instance.config);
+  await jobState.iterateEntities(
+    { _type: Entities.ORGANIZATION._type },
+    async (organization) => {
+      const organizationSlug: string = String(organization.slug);
+      if (organizationSlug) {
+        await apiClient.iterateTeams(organizationSlug, async (teamData) => {
+          const teamEntity = await jobState.addEntity(
+            createSentryTeamEntity(teamData),
+          );
+          await jobState.addRelationship(
+            createSentryTeamRelationship(organization, teamEntity),
+          );
+        });
+      }
+    },
+  );
+}
+
+export async function fetchTeamsAssignments({
+  instance,
+  jobState,
+}: IntegrationStepExecutionContext<IntegrationConfig>) {
+  await jobState.iterateEntities(
+    { _type: Entities.TEAM._type },
+    async (teamEntity) => {
+      // Do the following in a subsequent call to get data to add relationships.
+      const teamData = getRawData<SentryTeam>(teamEntity);
+      if (teamData) {
+        for (const project of teamData.projects) {
+          const projectEntity = await jobState.findEntity(
+            `sentry-project-${project.id}`,
+          );
+          if (projectEntity) {
+            await jobState.addRelationship(
+              createSentryTeamAssignedProjectRelationship(
+                teamEntity,
+                projectEntity,
+              ),
+            );
+          }
+        }
+      }
+    },
+  );
+}
 
 export async function fetchUsers({
   instance,
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const apiClient = createAPIClient(instance.config);
-
-  const accountEntity = (await jobState.getData(ACCOUNT_ENTITY_KEY)) as Entity;
-
-  await apiClient.iterateUsers(async (user) => {
-    const userEntity = await jobState.addEntity(createUserEntity(user));
-    await jobState.addRelationship(
-      createAccountUserRelationship(accountEntity, userEntity),
-    );
-  });
+  await jobState.iterateEntities(
+    { _type: Entities.ORGANIZATION._type },
+    async (organization) => {
+      const organizationSlug: string = String(organization.slug);
+      if (organizationSlug) {
+        await apiClient.iterateUsers(organizationSlug, async (userData) => {
+          const userEntity = await jobState.addEntity(
+            createSentryUserEntity(userData),
+          );
+          await jobState.addRelationship(
+            createSentryUserRelationship(organization, userEntity),
+          );
+        });
+      }
+    },
+  );
 }
 
-export async function fetchGroups({
+export async function fetchUserAssignments({
   instance,
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const apiClient = createAPIClient(instance.config);
-
-  const accountEntity = (await jobState.getData(ACCOUNT_ENTITY_KEY)) as Entity;
-
-  await apiClient.iterateGroups(async (group) => {
-    const groupEntity = await jobState.addEntity(createGroupEntity(group));
-    await jobState.addRelationship(
-      createAccountGroupRelationship(accountEntity, groupEntity),
-    );
-  });
-}
-
-export async function buildGroupUserRelationships({
-  jobState,
-  logger,
-}: IntegrationStepExecutionContext<IntegrationConfig>) {
   await jobState.iterateEntities(
-    { _type: Entities.GROUP._type },
-    async (groupEntity) => {
-      const group = getRawData<AcmeGroup>(groupEntity);
-
-      if (!group) {
-        logger.warn(
-          { _key: groupEntity._key },
-          'Could not get raw data for group entity',
-        );
-        return;
-      }
-
-      for (const user of group.users || []) {
-        const userEntity = await jobState.findEntity(user.id);
-
-        if (!userEntity) {
-          throw new IntegrationMissingKeyError(
-            `Expected user with key to exist (key=${user.id})`,
+    { _type: Entities.TEAM._type },
+    async (teamEntity) => {
+      const organizationSlug = instance.config.organizationSlug;
+      if (teamEntity) {
+        const teamSlug: string = String(teamEntity.slug);
+        if (organizationSlug && teamSlug) {
+          await apiClient.iterateTeamAssignments(
+            organizationSlug,
+            teamSlug,
+            async (teamMember) => {
+              const userEntity = await jobState.findEntity(
+                `sentry-user-${teamMember.id}`,
+              );
+              if (userEntity) {
+                await jobState.addRelationship(
+                  createSentryUserRelationship(teamEntity, userEntity),
+                );
+              }
+            },
           );
         }
-
-        await jobState.addRelationship(
-          createGroupUserRelationship(groupEntity, userEntity),
-        );
       }
     },
   );
@@ -87,27 +152,43 @@ export async function buildGroupUserRelationships({
 
 export const accessSteps: IntegrationStep<IntegrationConfig>[] = [
   {
+    id: Steps.PROJECTS,
+    name: 'Fetch Projects',
+    entities: [Entities.PROJECT],
+    relationships: [Relationships.ORGANIZATION_HAS_PROJECT],
+    dependsOn: [Steps.ORGANIZATIONS],
+    executionHandler: fetchProjects,
+  },
+  {
+    id: Steps.TEAMS,
+    name: 'Fetch Teams',
+    entities: [Entities.TEAM],
+    relationships: [Relationships.ORGANIZATION_HAS_TEAM],
+    dependsOn: [Steps.ORGANIZATIONS],
+    executionHandler: fetchTeams,
+  },
+  {
+    id: Steps.TEAMS_ASSIGNED_PROJECT,
+    name: 'Fetch Teams Assigned to Projects',
+    entities: [],
+    relationships: [Relationships.TEAM_ASSIGNED_PROJECT],
+    dependsOn: [Steps.TEAMS, Steps.PROJECTS],
+    executionHandler: fetchTeamsAssignments,
+  },
+  {
     id: Steps.USERS,
-    name: 'Fetch Users',
-    entities: [Entities.USER],
-    relationships: [Relationships.ACCOUNT_HAS_USER],
-    dependsOn: [Steps.ACCOUNT],
+    name: 'Fetch Members',
+    entities: [Entities.MEMBER],
+    relationships: [Relationships.ORGANIZATION_HAS_USER],
+    dependsOn: [Steps.ORGANIZATIONS],
     executionHandler: fetchUsers,
   },
   {
-    id: Steps.GROUPS,
-    name: 'Fetch Groups',
-    entities: [Entities.GROUP],
-    relationships: [Relationships.ACCOUNT_HAS_GROUP],
-    dependsOn: [Steps.ACCOUNT],
-    executionHandler: fetchGroups,
-  },
-  {
-    id: Steps.GROUP_USER_RELATIONSHIPS,
-    name: 'Build Group -> User Relationships',
+    id: Steps.USER_MEMBERSHIP,
+    name: 'Fetch Teams Members',
     entities: [],
-    relationships: [Relationships.GROUP_HAS_USER],
-    dependsOn: [Steps.GROUPS, Steps.USERS],
-    executionHandler: buildGroupUserRelationships,
+    relationships: [Relationships.TEAM_HAS_USER],
+    dependsOn: [Steps.TEAMS, Steps.USERS],
+    executionHandler: fetchUserAssignments,
   },
 ];

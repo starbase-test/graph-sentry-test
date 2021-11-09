@@ -7,10 +7,10 @@ if (process.env.LOAD_ENV) {
     path: path.join(__dirname, '../.env'),
   });
 }
-const DEFAULT_CLIENT_ID = 'dummy-acme-client-id';
-const DEFAULT_CLIENT_SECRET = 'dummy-acme-client-secret';
+const DEFAULT_AUTH_TOKEN = 'dummy-bearer-token';
+const DEFAULT_ORGANIZATION_SLUG = 'jupiterone-integration-develop';
 
 export const integrationConfig: IntegrationConfig = {
-  clientId: process.env.CLIENT_ID || DEFAULT_CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET || DEFAULT_CLIENT_SECRET,
+  authToken: process.env.AUTH_TOKEN || DEFAULT_AUTH_TOKEN,
+  organizationSlug: process.env.ORGANIZATION_SLUG || DEFAULT_ORGANIZATION_SLUG,
 };

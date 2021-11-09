@@ -1,9 +1,14 @@
-import http from 'http';
+import Axios, * as axios from 'axios';
 
 import { IntegrationProviderAuthenticationError } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
-import { AcmeUser, AcmeGroup } from './types';
+import {
+  SentryOrganization,
+  SentryTeam,
+  SentryProject,
+  SentryUser,
+} from './types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -16,72 +21,34 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
  * resources.
  */
 export class APIClient {
-  constructor(readonly config: IntegrationConfig) {}
+  private axiosInstance: axios.AxiosInstance;
+  private sentryBaseUrl: string;
+  private sentryOrganization: string | null;
 
-  public async verifyAuthentication(): Promise<void> {
-    // TODO make the most light-weight request possible to validate
-    // authentication works with the provided credentials, throw an err if
-    // authentication fails
-    const request = new Promise<void>((resolve, reject) => {
-      http.get(
-        {
-          hostname: 'localhost',
-          port: 443,
-          path: '/api/v1/some/endpoint?limit=1',
-          agent: false,
-          timeout: 10,
-        },
-        (res) => {
-          if (res.statusCode !== 200) {
-            reject(new Error('Provider authentication failed'));
-          } else {
-            resolve();
-          }
-        },
-      );
+  constructor(readonly config: IntegrationConfig) {
+    this.axiosInstance = Axios.create({
+      headers: {
+        Authorization: 'Bearer ' + config.authToken,
+      },
     });
+    this.sentryBaseUrl = 'https://sentry.io/api/0/';
 
-    try {
-      await request;
-    } catch (err) {
-      throw new IntegrationProviderAuthenticationError({
-        cause: err,
-        endpoint: 'https://localhost/api/v1/some/endpoint?limit=1',
-        status: err.status,
-        statusText: err.statusText,
-      });
-    }
+    this.sentryOrganization = config.organizationSlug;
   }
 
-  /**
-   * Iterates each user resource in the provider.
-   *
-   * @param iteratee receives each resource to produce entities/relationships
-   */
-  public async iterateUsers(
-    iteratee: ResourceIteratee<AcmeUser>,
-  ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
+  public async verifyAuthentication(): Promise<void> {
+    // A call to the baseURL will return a valid 200 status as long as we have a
+    // valid bearer token for authentication.
+    try {
+      await this.axiosInstance.get(this.sentryBaseUrl);
+    } catch (err) {
+      const response = err.response || {};
 
-    const users: AcmeUser[] = [
-      {
-        id: 'acme-user-1',
-        name: 'User One',
-      },
-      {
-        id: 'acme-user-2',
-        name: 'User Two',
-      },
-    ];
-
-    for (const user of users) {
-      await iteratee(user);
+      throw new IntegrationProviderAuthenticationError({
+        endpoint: this.sentryBaseUrl,
+        status: response.status,
+        statusText: response.statusText,
+      });
     }
   }
 
@@ -90,31 +57,122 @@ export class APIClient {
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateGroups(
-    iteratee: ResourceIteratee<AcmeGroup>,
+  public async iterateOrganizations(
+    iteratee: ResourceIteratee<SentryOrganization>,
   ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
+    let url = this.sentryBaseUrl + 'organizations/';
 
-    const groups: AcmeGroup[] = [
-      {
-        id: 'acme-group-1',
-        name: 'Group One',
-        users: [
-          {
-            id: 'acme-user-1',
-          },
-        ],
-      },
-    ];
+    url += `${this.sentryOrganization}/`;
 
-    for (const group of groups) {
-      await iteratee(group);
+    const orgResponse = await this.axiosInstance.get(url);
+    const orgResults = orgResponse.data;
+
+    await iteratee(orgResults);
+  }
+
+  /**
+   * Iterates each group resource in the provider.
+   *
+   * @param orgSlug added to URL to specify correct Sentry organization
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateTeams(
+    organizationSlug: string,
+    iteratee: ResourceIteratee<SentryTeam>,
+  ): Promise<void> {
+    const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/teams/`;
+    let moreData = true;
+
+    while (moreData) {
+      const teamResponse = await this.axiosInstance.get(url);
+      const teamResults = teamResponse.data;
+
+      const teamHeaders = teamResponse.headers;
+      moreData = Boolean(teamHeaders.results); //results=true when more than 100 results are available
+
+      for (const team of teamResults) {
+        await iteratee(team);
+      }
+    }
+  }
+
+  /**
+   * Iterates each group resource in the provider.
+   *
+   * @param orgSlug added to URL to specify correct Sentry organization
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateProjects(
+    organizationSlug: string,
+    iteratee: ResourceIteratee<SentryProject>,
+  ): Promise<void> {
+    const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/projects/`;
+    let moreData = true;
+
+    while (moreData) {
+      const projectResponse = await this.axiosInstance.get(url);
+      const projectResults = projectResponse.data;
+
+      const projectHeaders = projectResponse.headers;
+      moreData = Boolean(projectHeaders.results); //results=true when more than 100 results are available
+
+      for (const project of projectResults) {
+        await iteratee(project);
+      }
+    }
+  }
+
+  /**
+   * Iterates each user resource in the provider.
+   *
+   * @param orgSlug added to URL to specify correct Sentry organization
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateUsers(
+    organizationSlug: string,
+    iteratee: ResourceIteratee<SentryUser>,
+  ): Promise<void> {
+    const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/users/`;
+    let moreData = true;
+
+    while (moreData) {
+      const userResponse = await this.axiosInstance.get(url);
+      const userResults = userResponse.data;
+
+      const userHeaders = userResponse.headers;
+      moreData = Boolean(userHeaders.results); //results=true when more than 100 results are available
+
+      for (const user of userResults) {
+        await iteratee(user);
+      }
+    }
+  }
+
+  /**
+   * Iterates each group resource in the provider.
+   *
+   * @param orgSlug added to URL to specify correct Sentry organization
+   * @param teamSlug added to URL to specify correct Sentry team
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateTeamAssignments(
+    orgSlug: string,
+    teamSlug: string,
+    iteratee: ResourceIteratee<SentryUser>,
+  ): Promise<void> {
+    const url = `${this.sentryBaseUrl}teams/${orgSlug}/${teamSlug}/members/`;
+    let moreData = true;
+
+    while (moreData) {
+      const teamAssignmentResponse = await this.axiosInstance.get(url);
+      const teamAssignmentResults = teamAssignmentResponse.data;
+
+      const teamAssignmentHeaders = teamAssignmentResponse.headers;
+      moreData = Boolean(teamAssignmentHeaders.results); //results=true when more than 100 results are available
+
+      for (const member of teamAssignmentResults) {
+        await iteratee(member);
+      }
     }
   }
 }
