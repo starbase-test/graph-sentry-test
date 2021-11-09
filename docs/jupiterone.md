@@ -41,6 +41,8 @@ of authentication has been fully implemented. TODO: List specific actions that
 must be taken in the provider. Remove this section when there are no actions to
 take in the provider.
 
+[Sentry API Documentation](https://docs.sentry.io/api/auth/)
+
 1. [Generate a REST API key](https://example.com/docs/generating-api-keys)
 
 ### In JupiterOne

@@ -7,6 +7,7 @@ import {
 export const Steps = {
   ORGANIZATIONS: 'fetch-organization',
   TEAMS: 'fetch-teams',
+  TEAMS_ASSIGNED_PROJECT: 'fetch-teams-assignments',
   PROJECTS: 'fetch-projects',
   USERS: 'fetch-members',
   USER_MEMBERSHIP: 'fetch-teams-members',

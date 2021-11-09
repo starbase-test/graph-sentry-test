@@ -48,6 +48,19 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
         _class: RelationshipClass.HAS,
         targetType: 'sentry_team',
       },
+    ],
+    dependsOn: ['fetch-organization'],
+    implemented: true,
+  },
+  {
+    /**
+     * ENDPOINT: /api/0/organizations/{organization_slug}/teams/
+     * PATTERN: Fetch Child Relationships
+     */
+    id: 'fetch-teams-assignments',
+    name: 'Fetch Teams Assigned to Projects',
+    entities: [],
+    relationships: [
       {
         _type: 'sentry_team_assigned_project',
         sourceType: 'sentry_team',
@@ -55,7 +68,7 @@ export const accessSpec: StepSpec<IntegrationConfig>[] = [
         targetType: 'sentry_project',
       },
     ],
-    dependsOn: ['fetch-organization', 'fetch-projects'],
+    dependsOn: ['fetch-teams', 'fetch-projects'],
     implemented: true,
   },
   {

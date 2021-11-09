@@ -7,10 +7,10 @@ if (process.env.LOAD_ENV) {
     path: path.join(__dirname, '../.env'),
   });
 }
-const DEFAULT_CLIENT_TOKEN = 'dummy-bearer-token';
-const DEFAULT_ORG = 'jupiterone-integration-develop';
+const DEFAULT_AUTH_TOKEN = 'dummy-bearer-token';
+const DEFAULT_ORGANIZATION_SLUG = 'jupiterone-integration-develop';
 
 export const integrationConfig: IntegrationConfig = {
-  clientToken: process.env.CLIENT_TOKEN || DEFAULT_CLIENT_TOKEN,
-  organization: process.env.ORGANIZATION || DEFAULT_ORG,
+  authToken: process.env.AUTH_TOKEN || DEFAULT_AUTH_TOKEN,
+  organizationSlug: process.env.ORGANIZATION_SLUG || DEFAULT_ORGANIZATION_SLUG,
 };

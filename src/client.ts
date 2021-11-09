@@ -28,12 +28,12 @@ export class APIClient {
   constructor(readonly config: IntegrationConfig) {
     this.axiosInstance = Axios.create({
       headers: {
-        Authorization: 'Bearer ' + config.clientToken,
+        Authorization: 'Bearer ' + config.authToken,
       },
     });
     this.sentryBaseUrl = 'https://sentry.io/api/0/';
 
-    this.sentryOrganization = config.organization;
+    this.sentryOrganization = config.organizationSlug;
   }
 
   public async verifyAuthentication(): Promise<void> {
@@ -61,41 +61,24 @@ export class APIClient {
     iteratee: ResourceIteratee<SentryOrganization>,
   ): Promise<void> {
     let url = this.sentryBaseUrl + 'organizations/';
-    let moreData = true;
 
-    //optionally add org_slug if it was provided in .env
-    if (this.sentryOrganization) {
-      url += `${this.sentryOrganization}/`;
-    }
+    url += `${this.sentryOrganization}/`;
 
-    while (moreData) {
-      const orgResponse = await this.axiosInstance.get(url);
-      const orgResults = orgResponse.data;
+    const orgResponse = await this.axiosInstance.get(url);
+    const orgResults = orgResponse.data;
 
-      const orgHeaders = orgResponse.headers;
-      moreData = Boolean(orgHeaders.results); //results=true when more than 100 results are available
-
-      // Organization is an oddity in that it may at times only return a single object
-      // instead of an iterable array.  Check for an iterator before proceeding.
-      if (orgResults && typeof orgResults[Symbol.iterator] === 'function') {
-        for (const organization of orgResults) {
-          await iteratee(organization);
-        }
-      } else {
-        await iteratee(orgResults);
-      }
-    }
+    await iteratee(orgResults);
   }
 
   /**
    * Iterates each group resource in the provider.
    *
-   * @param iteratee receives each resource to produce entities/relationships
    * @param orgSlug added to URL to specify correct Sentry organization
+   * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeams(
-    iteratee: ResourceIteratee<SentryTeam>,
     organizationSlug: string,
+    iteratee: ResourceIteratee<SentryTeam>,
   ): Promise<void> {
     const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/teams/`;
     let moreData = true;
@@ -116,12 +99,12 @@ export class APIClient {
   /**
    * Iterates each group resource in the provider.
    *
-   * @param iteratee receives each resource to produce entities/relationships
    * @param orgSlug added to URL to specify correct Sentry organization
+   * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateProjects(
-    iteratee: ResourceIteratee<SentryProject>,
     organizationSlug: string,
+    iteratee: ResourceIteratee<SentryProject>,
   ): Promise<void> {
     const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/projects/`;
     let moreData = true;
@@ -142,12 +125,12 @@ export class APIClient {
   /**
    * Iterates each user resource in the provider.
    *
-   * @param iteratee receives each resource to produce entities/relationships
    * @param orgSlug added to URL to specify correct Sentry organization
+   * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateUsers(
-    iteratee: ResourceIteratee<SentryUser>,
     organizationSlug: string,
+    iteratee: ResourceIteratee<SentryUser>,
   ): Promise<void> {
     const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/users/`;
     let moreData = true;
@@ -168,14 +151,14 @@ export class APIClient {
   /**
    * Iterates each group resource in the provider.
    *
-   * @param iteratee receives each resource to produce entities/relationships
    * @param orgSlug added to URL to specify correct Sentry organization
    * @param teamSlug added to URL to specify correct Sentry team
+   * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamAssignments(
-    iteratee: ResourceIteratee<SentryUser>,
     orgSlug: string,
     teamSlug: string,
+    iteratee: ResourceIteratee<SentryUser>,
   ): Promise<void> {
     const url = `${this.sentryBaseUrl}teams/${orgSlug}/${teamSlug}/members/`;
     let moreData = true;
