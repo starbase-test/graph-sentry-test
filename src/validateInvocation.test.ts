@@ -32,6 +32,11 @@ it('auth error', async () => {
     instanceConfig: {
       authToken: 'INVALID',
       organizationSlug: 'INVALID',
+      clientID: 'INVALID',
+      clientSecret: 'INVALID',
+      installCode: 'INVALID',
+      installID: 'INVALID',
+      refreshToken: 'INVALID',
     },
   });
 

@@ -22,8 +22,9 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
  */
 export class APIClient {
   private axiosInstance: axios.AxiosInstance;
+  private axiosAuthInstance: axios.AxiosInstance;
   private sentryBaseUrl: string;
-  private sentryOrganization: string | null;
+  private sentryConfig: IntegrationConfig;
 
   constructor(readonly config: IntegrationConfig) {
     this.axiosInstance = Axios.create({
@@ -31,16 +32,67 @@ export class APIClient {
         Authorization: 'Bearer ' + config.authToken,
       },
     });
-    this.sentryBaseUrl = 'https://sentry.io/api/0/';
+    this.axiosAuthInstance = Axios.create({});
 
-    this.sentryOrganization = config.organizationSlug;
+    this.sentryConfig = config;
+    this.sentryBaseUrl = 'https://sentry.io/api/0/';
+  }
+
+  // TODO, I'm not sure when we'd trigger this, but if we don't have our first token and refreshToken
+  // yet, we need to do a slightly modified call to the Sentry authorization endpoint.
+  public async generateToken() {
+    const tokenURL = `${this.sentryBaseUrl}sentry-app-installations/${this.sentryConfig.installID}/authorizations/`;
+    const tokenResp = await this.axiosAuthInstance.post(tokenURL, {
+      grant_type: 'authorization_code',
+      code: this.sentryConfig.installCode,
+      client_id: this.sentryConfig.clientID,
+      client_secret: this.sentryConfig.clientSecret,
+    });
+
+    this.sentryConfig.authToken = tokenResp.data.token;
+    this.sentryConfig.refreshToken = tokenResp.data.refreshToken;
+
+    delete this.axiosInstance.defaults.headers['Authorization'];
+    this.axiosInstance.defaults.headers['Authorization'] =
+      'Bearer ' + this.sentryConfig.authToken;
+  }
+
+  public async refreshToken() {
+    const refreshURL = `${this.sentryBaseUrl}sentry-app-installations/${this.sentryConfig.installID}/authorizations/`;
+    const refreshResp = await this.axiosAuthInstance.post(refreshURL, {
+      grant_type: 'refresh_token',
+      refresh_token: this.sentryConfig.refreshToken,
+      client_id: this.sentryConfig.clientID,
+      client_secret: this.sentryConfig.clientSecret,
+    });
+
+    this.sentryConfig.authToken = refreshResp.data.token;
+    this.sentryConfig.refreshToken = refreshResp.data.refreshToken;
+
+    delete this.axiosInstance.defaults.headers['Authorization'];
+    this.axiosInstance.defaults.headers['Authorization'] =
+      'Bearer ' + this.sentryConfig.authToken;
+  }
+
+  public async getWithTokenRefresh(
+    url: string,
+  ): Promise<axios.AxiosResponse<any, any>> {
+    let returnVal;
+    try {
+      returnVal = await this.axiosInstance.get(url);
+      return returnVal;
+    } catch (err) {
+      await this.refreshToken();
+      returnVal = await this.axiosInstance.get(url);
+      return returnVal;
+    }
   }
 
   public async verifyAuthentication(): Promise<void> {
     // A call to the baseURL will return a valid 200 status as long as we have a
     // valid bearer token for authentication.
     try {
-      await this.axiosInstance.get(this.sentryBaseUrl);
+      await this.getWithTokenRefresh(this.sentryBaseUrl);
     } catch (err) {
       const response = err.response || {};
 
@@ -62,9 +114,9 @@ export class APIClient {
   ): Promise<void> {
     let url = this.sentryBaseUrl + 'organizations/';
 
-    url += `${this.sentryOrganization}/`;
+    url += `${this.sentryConfig.organizationSlug}/`;
 
-    const orgResponse = await this.axiosInstance.get(url);
+    const orgResponse = await this.getWithTokenRefresh(url);
     const orgResults = orgResponse.data;
 
     await iteratee(orgResults);
@@ -84,7 +136,7 @@ export class APIClient {
     let moreData = true;
 
     while (moreData) {
-      const teamResponse = await this.axiosInstance.get(url);
+      const teamResponse = await this.getWithTokenRefresh(url);
       const teamResults = teamResponse.data;
 
       const teamHeaders = teamResponse.headers;
@@ -110,7 +162,7 @@ export class APIClient {
     let moreData = true;
 
     while (moreData) {
-      const projectResponse = await this.axiosInstance.get(url);
+      const projectResponse = await this.getWithTokenRefresh(url);
       const projectResults = projectResponse.data;
 
       const projectHeaders = projectResponse.headers;
@@ -136,7 +188,7 @@ export class APIClient {
     let moreData = true;
 
     while (moreData) {
-      const userResponse = await this.axiosInstance.get(url);
+      const userResponse = await this.getWithTokenRefresh(url);
       const userResults = userResponse.data;
 
       const userHeaders = userResponse.headers;
@@ -164,7 +216,7 @@ export class APIClient {
     let moreData = true;
 
     while (moreData) {
-      const teamAssignmentResponse = await this.axiosInstance.get(url);
+      const teamAssignmentResponse = await this.getWithTokenRefresh(url);
       const teamAssignmentResults = teamAssignmentResponse.data;
 
       const teamAssignmentHeaders = teamAssignmentResponse.headers;

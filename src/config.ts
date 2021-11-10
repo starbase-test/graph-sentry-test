@@ -29,6 +29,26 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
     type: 'string',
     mask: true,
   },
+  clientID: {
+    type: 'string',
+    mask: true,
+  },
+  clientSecret: {
+    type: 'string',
+    mask: true,
+  },
+  installCode: {
+    type: 'string',
+    mask: true,
+  },
+  installID: {
+    type: 'string',
+    mask: true,
+  },
+  refreshToken: {
+    type: 'string',
+    mask: true,
+  },
 };
 
 /**
@@ -41,9 +61,29 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    */
   authToken: string;
   /**
-   * Optional value to specify a single organization if the authentication has access to multiple.
+   * Organizational slug used to specify correct URL for API calls.
    */
   organizationSlug: string;
+  /**
+   * Organizational slug used to specify correct URL for API calls.
+   */
+  clientID: string;
+  /**
+   * Organizational slug used to specify correct URL for API calls.
+   */
+  clientSecret: string;
+  /**
+   * Organizational slug used to specify correct URL for API calls.
+   */
+  installCode: string;
+  /**
+   * Organizational slug used to specify correct URL for API calls.
+   */
+  installID: string;
+  /**
+   * Organizational slug used to specify correct URL for API calls.
+   */
+  refreshToken: string;
 }
 
 export async function validateInvocation(
@@ -51,9 +91,17 @@ export async function validateInvocation(
 ) {
   const { config } = context.instance;
 
-  if (!config.authToken || !config.organizationSlug) {
+  if (
+    !config.authToken ||
+    !config.organizationSlug ||
+    !config.clientID ||
+    !config.clientSecret ||
+    !config.installCode ||
+    !config.installID ||
+    !config.refreshToken
+  ) {
     throw new IntegrationValidationError(
-      'Config requires all of {authToken, organizationSlug}',
+      'Config requires all of {authToken, organizationSlug, clientID, clientSecret, installCode, installID, refreshToken }',
     );
   }
 
