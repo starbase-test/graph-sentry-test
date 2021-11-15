@@ -17,8 +17,10 @@ questions:
       Returns a list of Sentry users who do not have multi-factor authentication enabled
       on their account.
     queries:
-        query: |
-          FIND sentry_member AS sm WHERE sm.mfaEnabled=true RETURN sm.username
+      - name: good
+        query: FIND sentry_member AS sm WHERE sm.mfaEnabled=true RETURN sm.username
+      - name: bad
+        query: FIND sentry_member AS sm WHERE sm.mfaEnabled!=true RETURN sm.username
     tags:
       - sentry
       - user
