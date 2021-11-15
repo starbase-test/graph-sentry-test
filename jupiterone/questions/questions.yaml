@@ -6,8 +6,8 @@ questions:
     title: Who has access to Sentry in my organization?
     description: Returns a list of users with Sentry access.
     queries:
-        query: |
-          FIND sentry_member AS sm RETURN sm.username
+      - name: good
+        query: FIND sentry_member AS sm RETURN sm.username
     tags:
       - sentry
       - user
