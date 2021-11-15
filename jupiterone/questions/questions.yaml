@@ -1,0 +1,26 @@
+---
+sourceId: managed:template
+integrationDefinitionId: '${integration_definition_id}'
+questions:
+  - id: managed-question-sentry-access-list
+    title: Who has access to Sentry in my organization?
+    description: Returns a list of users with Sentry access.
+    queries:
+        query: |
+          FIND sentry_member AS sm RETURN sm.username
+    tags:
+      - sentry
+      - user
+  - id: managed-question-sentry-2fa
+    title: Which users of Sentry do not have 2FA enabled on their account?
+    description:
+      Returns a list of Sentry users who do not have multi-factor authentication enabled
+      on their account.
+    queries:
+      - name: good
+        query: FIND sentry_member AS sm WHERE sm.mfaEnabled=true RETURN sm.username
+      - name: bad
+        query: FIND sentry_member AS sm WHERE sm.mfaEnabled!=true RETURN sm.username
+    tags:
+      - sentry
+      - user
