@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Switched from /users/ to /members/ API call to pull in all available members
+  of an organization.
+
 ## 1.1.0 - 2021-12-03
 
 ### Added

@@ -50,14 +50,18 @@ export function createSentryUserEntity(user: SentryUser) {
         createdOn: parseTimePropertyValue(user.dateCreated),
         username: user.email,
         role: user.role,
-        mfaEnabled: user.user.has2fa,
-        active: user.user.isActive === true,
-        isManaged: user.user.isManaged === true,
-        isStaff: user.user.isStaff === true,
-        isSuperuser: user.user.isSuperuser === true,
-        dateJoined: parseTimePropertyValue(user.user.dateJoined),
-        lastActive: parseTimePropertyValue(user.user.lastActive),
-        lastLogin: parseTimePropertyValue(user.user.lastLogin),
+        mfaEnabled: user.user ? user.user.has2fa === true : false,
+        active: user.user ? user.user.isActive === true : false,
+        isManaged: user.user ? user.user.isManaged === true : false,
+        isStaff: user.user ? user.user.isStaff === true : false,
+        isSuperuser: user.user ? user.user.isSuperuser === true : false,
+        dateJoined: user.user
+          ? parseTimePropertyValue(user.user.dateJoined)
+          : 0,
+        lastActive: user.user
+          ? parseTimePropertyValue(user.user.lastActive)
+          : 0,
+        lastLogin: user.user ? parseTimePropertyValue(user.user.lastLogin) : 0,
       },
     },
   });
