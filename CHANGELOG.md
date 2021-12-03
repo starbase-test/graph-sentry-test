@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.1.1 - 2021-12-03
+
 ### Fixed
 
 - Switched from /users/ to /members/ API call to pull in all available members
