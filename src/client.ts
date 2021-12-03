@@ -132,7 +132,7 @@ export class APIClient {
     organizationSlug: string,
     iteratee: ResourceIteratee<SentryUser>,
   ): Promise<void> {
-    const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/users/`;
+    const url = `${this.sentryBaseUrl}organizations/${organizationSlug}/members/`;
     let moreData = true;
 
     while (moreData) {

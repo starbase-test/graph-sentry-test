@@ -22,7 +22,7 @@ export interface SentryUser {
   email: string;
   role: string;
   dateCreated: string; // Date
-  user: {
+  user?: {
     dateJoined: string; // Date
     has2fa: boolean;
     hasPasswordAuth: boolean;
