@@ -4,6 +4,7 @@ import {
   Entity,
   RelationshipClass,
   Relationship,
+  parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import { Entities } from '../constants';
@@ -46,9 +47,17 @@ export function createSentryUserEntity(user: SentryUser) {
         _key: `sentry-user-${user.id}`,
         _type: Entities.MEMBER._type,
         _class: Entities.MEMBER._class,
+        createdOn: parseTimePropertyValue(user.dateCreated),
         username: user.email,
         role: user.role,
         mfaEnabled: user.user.has2fa,
+        active: user.user.isActive === true,
+        isManaged: user.user.isManaged === true,
+        isStaff: user.user.isStaff === true,
+        isSuperuser: user.user.isSuperuser === true,
+        dateJoined: parseTimePropertyValue(user.user.dateJoined),
+        lastActive: parseTimePropertyValue(user.user.lastActive),
+        lastLogin: parseTimePropertyValue(user.user.lastLogin),
       },
     },
   });

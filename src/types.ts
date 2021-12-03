@@ -21,6 +21,17 @@ export interface SentryUser {
   name: string;
   email: string;
   role: string;
-  user: { has2fa: boolean };
+  dateCreated: string; // Date
+  user: {
+    dateJoined: string; // Date
+    has2fa: boolean;
+    hasPasswordAuth: boolean;
+    isActive: boolean;
+    isManaged: boolean;
+    isStaff: boolean;
+    isSuperuser: boolean;
+    lastActive: string; // Date
+    lastLogin: string; // Date
+  };
   projects?: SentryProject[];
 }

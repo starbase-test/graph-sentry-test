@@ -81,6 +81,13 @@ test('should collect data', async () => {
         username: { type: 'string' },
         role: { type: 'string' },
         mfaEnabled: { type: 'boolean' },
+        active: { type: 'boolean' },
+        isManaged: { type: 'boolean' },
+        isStaff: { type: 'boolean' },
+        isSuperuser: { type: 'boolean' },
+        dateJoined: { type: 'number' },
+        lastActive: { type: 'number' },
+        lastLogin: { type: 'number' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
