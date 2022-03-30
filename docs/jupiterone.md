@@ -19,10 +19,10 @@
 
 - JupiterOne requires an Auth Token. You need sufficient access in Sentry to
   create an Auth Token with the following scopes:
-  - member:read
-  - org:read
-  - project:read
-  - team:read
+  - `member:read`
+  - `org:read`
+  - `project:read`
+  - `team:read`
 - You must have permission in JupiterOne to install new integrations.
 
 ## Support
