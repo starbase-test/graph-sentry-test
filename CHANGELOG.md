@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.1.2 - 2021-03-30
+
+### Fixed
+
+- Updates (primarily documentation) for switching to using auth tokens.
+
 ## 1.1.1 - 2021-12-03
 
 ### Fixed
