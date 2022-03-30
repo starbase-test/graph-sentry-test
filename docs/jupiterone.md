@@ -17,14 +17,12 @@
 
 ## Requirements
 
-TODO: Awaiting final completion of this section out later once the final method
-of authentication has been fully implemented. TODO: Iterate requirements for
-setting up the integration. Consider the following examples:
-
-- Sentry supports the OAuth2 Client Credential flow. You must have a
-  Administrator user account.
-- JupiterOne requires a REST API key. You need permission to create a user in
-  Sentry that will be used to obtain the API key.
+- JupiterOne requires an Auth Token. You need sufficient access in Sentry to
+  create an Auth Token with the following scopes:
+  - member:read
+  - org:read
+  - project:read
+  - team:read
 - You must have permission in JupiterOne to install new integrations.
 
 ## Support
@@ -36,21 +34,16 @@ If you need help with this integration, please contact
 
 ### In Sentry
 
-TODO: Awaiting final completion of this section out later once the final method
-of authentication has been fully implemented. TODO: List specific actions that
-must be taken in the provider. Remove this section when there are no actions to
-take in the provider.
-
 [Sentry API Documentation](https://docs.sentry.io/api/auth/)
 
-1. [Generate a REST API key](https://example.com/docs/generating-api-keys)
+[Generate am Auth Token](https://sentry.io/settings/account/api/auth-tokens/)
+
+1. Navigate to the Auth Tokens page in Sentry Settings.
+2. Select **Create New Token** in the top right corner.
+3. Select `project:read`, `team:read`, `org:read`, and `member:read` and then
+   click **Create Token**.
 
 ### In JupiterOne
-
-TODO: Awaiting final completion of this section out later once the final method
-of authentication has been fully implemented. TODO: List specific actions that
-must be taken in JupiterOne. Many of the following steps will be reusable; take
-care to be sure they remain accurate.
 
 1. From the configuration **Gear Icon**, select **Integrations**.
 2. Scroll to the **Sentry** integration tile and click it.
@@ -63,8 +56,11 @@ care to be sure they remain accurate.
   the integration instance.
 - Select a **Polling Interval** that you feel is sufficient for your monitoring
   needs. You may leave this as `DISABLED` and manually execute the integration.
-- {{additional provider-specific settings}} Enter the **Sentry API Key**
-  generated for use by JupiterOne.
+- Enter the **Auth Token** generated for use by JupiterOne in the Sentry steps
+  above.
+- Enter Sentry organization slug in the **Organization** field. This is the URL
+  safe version of your organization and can be found in your Sentry URL at
+  _sentry.io/organizations/`organization-slug`/..._
 
 4. Click **Create Configuration** once all values are provided.
 
