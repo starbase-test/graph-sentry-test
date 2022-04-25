@@ -46,25 +46,33 @@ jobs:
 
       # Fetch tags and describe the commit before the merge commit
       # to see if it's a version publish
-      - name: Fetch tags
+      - name: Auto version check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
+          yarn
           git fetch --tags
-          if git describe --exact-match --match "v*.*.*" HEAD^2
-          then
-            echo "Found version commit tag. Publishing."
-            echo "publish=true" >> $GITHUB_ENV
-            echo "VERSION_NUM=`echo $(git describe --tags --abbrev=0 | sed -e "s/v//gI")`" >> $GITHUB_ENV
-          else
-            echo "Version commit tag not found. Not publishing."
-          fi
+          echo "VERSION=`echo $(npx auto version)`" >> $GITHUB_ENV
+          echo "publish=true" >> $GITHUB_ENV
 
       - name: Publish
         if: env.publish == 'true'
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          GH_USER_EMAIL: ${{ github.event.commits[0].committer.email }}
+          GH_USER: ${{ github.event.commits[0].committer.name }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           yarn
+          npx auto changelog
+          echo "Setting version based on auto version:  $VERSION"
+          echo "Using $GH_USER_EMAIL and $GH_USER for commits"
+          git config user.email "$GH_USER_EMAIL"
+          git config user.name "$GH_USER"
+          npm version $VERSION -m "Bump version to: %s and automatically update CHANGELOG [auto]"
+          git push --follow-tags
           yarn build
           npm publish ./dist
 

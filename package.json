@@ -34,9 +34,15 @@
   "devDependencies": {
     "@jupiterone/integration-sdk-core": "^8.8.0",
     "@jupiterone/integration-sdk-dev-tools": "^8.8.0",
-    "@jupiterone/integration-sdk-testing": "^8.8.0"
+    "@jupiterone/integration-sdk-testing": "^8.8.0",
+    "auto": "^10.36.5"
   },
   "dependencies": {
     "axios": "^0.24.0"
+  },
+  "auto": {
+    "plugins": [
+      "npm"
+    ]
   }
 }
