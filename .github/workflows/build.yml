@@ -53,11 +53,10 @@ jobs:
         run: |
           yarn
           git fetch --tags
-          echo "VERSION=`echo $(npx auto version)`" >> $GITHUB_ENV
-          echo "publish=true" >> $GITHUB_ENV
+          echo "VERSION=`echo $(npx auto version --only-publish-with-release-label)`" >> $GITHUB_ENV
 
       - name: Publish
-        if: env.publish == 'true'
+        if: env.VERSION != null
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
@@ -74,6 +73,7 @@ jobs:
           git push --follow-tags
           yarn build
           npm publish ./dist
+          echo "publish=true" >> $GITHUB_ENV
 
       - name: Get Version Changelog Entry
         if: env.publish == 'true'

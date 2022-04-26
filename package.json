@@ -43,6 +43,7 @@
   "auto": {
     "plugins": [
       "npm"
-    ]
+    ],
+    "onlyPublishWithReleaseLabel": true
   }
 }
