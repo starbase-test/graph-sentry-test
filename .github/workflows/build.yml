@@ -49,7 +49,7 @@ jobs:
       - name: Auto version check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           yarn
           git fetch --tags
@@ -59,11 +59,11 @@ jobs:
         if: env.VERSION != null
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           GH_USER_EMAIL: ${{ github.event.commits[0].committer.email }}
           GH_USER: ${{ github.event.commits[0].committer.name }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
           yarn
           echo "Setting version based on auto version:  $VERSION"
           echo "Using $GH_USER_EMAIL and $GH_USER for commits"
