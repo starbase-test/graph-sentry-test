@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.2.0 - 2022-04-26
+
+### Added
+
+- Versioning and NPM package releasing is now handled via
+  [auto](https://intuit.github.io/auto/)
+
 ## 1.1.2 - 2021-03-30
 
 ### Fixed

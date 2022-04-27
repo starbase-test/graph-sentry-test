@@ -1,5 +1,5 @@
 name: Build
-on: 
+on:
   pull_request:
   push:
     branches:
@@ -46,27 +46,34 @@ jobs:
 
       # Fetch tags and describe the commit before the merge commit
       # to see if it's a version publish
-      - name: Fetch tags
+      - name: Auto version check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
+          yarn
           git fetch --tags
-          if git describe --exact-match --match "v*.*.*" HEAD^2
-          then
-            echo "Found version commit tag. Publishing."
-            echo "publish=true" >> $GITHUB_ENV
-            echo "VERSION_NUM=`echo $(git describe --tags --abbrev=0 | sed -e "s/v//gI")`" >> $GITHUB_ENV
-          else
-            echo "Version commit tag not found. Not publishing."
-          fi
+          echo "VERSION=`echo $(npx auto version --only-publish-with-release-label)`" >> $GITHUB_ENV
 
       - name: Publish
-        if: env.publish == 'true'
+        if: env.VERSION != null
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          GH_USER_EMAIL: ${{ github.event.commits[0].committer.email }}
+          GH_USER: ${{ github.event.commits[0].committer.name }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
           yarn
+          echo "Setting version based on auto version:  $VERSION"
+          echo "Using $GH_USER_EMAIL and $GH_USER for commits"
+          git config user.email "$GH_USER_EMAIL"
+          git config user.name "$GH_USER"
+          npm version $VERSION -m "Bump version to: %s [auto]"
+          git push --follow-tags
           yarn build
           npm publish ./dist
+          echo "publish=true" >> $GITHUB_ENV
 
       - name: Get Version Changelog Entry
         if: env.publish == 'true'
@@ -87,6 +94,7 @@ jobs:
           tag_name: ${{ steps.changelog_reader.outputs.version }}
           release_name: Release ${{ steps.changelog_reader.outputs.version }}
           body: ${{ steps.changelog_reader.outputs.changes }}
-          prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
+          prerelease:
+            ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
           draft: ${{ steps.changelog_reader.outputs.status == 'unreleased' }}
         continue-on-error: true
