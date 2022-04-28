@@ -48,7 +48,7 @@ jobs:
       # to see if it's a version publish
       - name: Auto version check
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.AUTO_GITHUB_PAT_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           yarn
@@ -58,7 +58,7 @@ jobs:
       - name: Publish
         if: env.VERSION != null
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.AUTO_GITHUB_PAT_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
           GH_USER_EMAIL: ${{ github.event.commits[0].committer.email }}
           GH_USER: ${{ github.event.commits[0].committer.name }}
@@ -67,8 +67,8 @@ jobs:
           yarn
           echo "Setting version based on auto version:  $VERSION"
           echo "Using $GH_USER_EMAIL and $GH_USER for commits"
-          git config user.email "$GH_USER_EMAIL"
-          git config user.name "$GH_USER"
+          git config user.email "internal-automation.bot@jupiterone.com"
+          git config user.name "j1-internal-automation"
           npm version $VERSION -m "Bump version to: %s [auto]"
           git push --follow-tags
           yarn build
@@ -89,7 +89,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.AUTO_GITHUB_PAT_TOKEN }}
         with:
           tag_name: ${{ steps.changelog_reader.outputs.version }}
           release_name: Release ${{ steps.changelog_reader.outputs.version }}
