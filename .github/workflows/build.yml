@@ -66,7 +66,6 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
           yarn
           echo "Setting version based on auto version:  $VERSION"
-          echo "Using $GH_USER_EMAIL and $GH_USER for commits"
           git config user.email "internal-automation.bot@jupiterone.com"
           git config user.name "j1-internal-automation"
           npm version $VERSION -m "Bump version to: %s [auto]"
