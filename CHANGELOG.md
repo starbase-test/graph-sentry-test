@@ -12,7 +12,7 @@ and this project adheres to
 
 ### Added
 
-- Versioning and NPM package releasing is now handled via
+- Attempting to version and NPM package release via
   [auto](https://intuit.github.io/auto/)
 
 ## 1.1.2 - 2021-03-30
