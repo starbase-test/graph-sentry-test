@@ -5,7 +5,7 @@ with JupiterOne in the [integration documentation](docs/jupiterone.md).
 
 ## Development
 
-TESTING AUTO VERSIONING. DO NOT USE.
+TESTING AUTO VERSIONING AND RELEASE. DO NOT USE.
 
 ### Prerequisites
 
